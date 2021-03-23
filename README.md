@@ -25,6 +25,7 @@ The robot should navigate the track continuously, strictly staying within the bo
 
 
 **Contributors:**
+- Michael Lee
 - \[add your name here if you are a contributor\]
 
 
