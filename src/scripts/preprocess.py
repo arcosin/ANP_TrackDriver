@@ -39,6 +39,9 @@ def readCommand(argv):
   parser.add_option('-o', '--out', dest='outdir',
                     help=default('Output destination'),
                     default=os.path.join(DEFAULT_OUTDIR, os.path.basename(args.get('image', ''))))
+  parser.add_option('--sample', action='store_true', dest='sample',
+                    help=default('Output various different brightness/contrast combinations'),
+                    default=False)
 
   options, junk = parser.parse_args(argv)
   if len(junk) != 0:
@@ -49,6 +52,7 @@ def readCommand(argv):
   args['brightness'] = options.brightness
   args['contrast'] = options.contrast
   args['path'] = options.outdir
+  args['sample'] = options.sample
 
   return args
 
@@ -101,7 +105,7 @@ def resize(image, size=DEFAULT_SIZE):
   return image[y:y+size, x:x+size]
 
 
-def demo(image, size=DEFAULT_SIZE):
+def demo(image, path, size=DEFAULT_SIZE):
   image = resize(image)
   out = np.zeros((size * 2, size * 3, 3), dtype=np.uint8)
   font = cv2.FONT_HERSHEY_SIMPLEX
@@ -119,7 +123,7 @@ def demo(image, size=DEFAULT_SIZE):
     msg = 'c %d' % c
     cv2.putText(out, msg, (col, row + size - 4), font, .7, fcolor, 1, cv2.LINE_AA)
 
-  cv2.imwrite(OUT, out)
+  cv2.imwrite(path, out)
 
 
 if __name__ == '__main__':
@@ -128,5 +132,8 @@ if __name__ == '__main__':
     exit()
   args = readCommand(sys.argv[1:])
   os.makedirs(DEFAULT_OUTDIR, exist_ok=True)
-  preprocess(**args)
+  if args['sample']:
+    demo(args['image'], args['path'], args['size'])
+  else:
+    preprocess(**args)
 
