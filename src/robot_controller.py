@@ -1,8 +1,9 @@
 import time
 import drivetrain
 import camera
+import linetracker
 
-if __name__ == "__main__":
+def testDrivetrain():
     try:
         print("Starting")
         dt = drivetrain.DriveTrain()
@@ -31,3 +32,18 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         dt.destroy()
         print("Terminated")
+
+if __name__ == "__main__":
+    #testDrivetrain()
+    lt = linetracker.LineTracker()
+    while True:
+        try:
+            if lt.detect()[0] == True:
+                print("Detected")
+            else:
+                print("Not detected")
+            
+            time.sleep(1)
+        except KeyboardInterrupt:
+            print("Terminated")
+            exit() 
