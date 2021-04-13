@@ -42,6 +42,8 @@ class DriveTrain:
         self.minPos = 100
         self.angleRange = 180
 
+        self.curAngle = 0
+
         self.driveSetup()
         self.turnSetup()
 
@@ -115,6 +117,32 @@ class DriveTrain:
         elif setPos < self.minPos: setPos = self.minPos
 
         self.turn_pwm.set_pwm(0, 0, setPos)
+
+    def moveAbsoluteDelay(self, speed, angle, timestep):
+        # Clamp these values on this side to ensure no hardware damage of any sort.
+        if speed < -100: speed = -100
+        elif speed > 100: speed = 100
+        if angle < -60: angle = -60
+        elif angle > 60: angle = 60
+
+        if speed == 0:
+            self.curAngle = 0
+            self.driveHalt()
+            time.sleep(timestep)
+            return
+        
+        changeAngle = angle - self.curAngle
+        self.curAngle = angle
+        self.turnAngle(changeAngle)
+        
+        if speed < 0:
+            self.moveSpeed(-speed, "backward")
+        else:
+            self.moveSpeed(speed, "forward")
+
+        time.sleep(timestep)
+        return
+
 
     def destroy(self):
         # Add logic for to uninstanitiate turn servo
