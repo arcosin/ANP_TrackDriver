@@ -12,22 +12,6 @@ from agent import Agent
 
 timestep = 1 # Seconds
 
-def test_shit():
-    img = Image.open("Capture.jpg")
-    img_data = np.asarray(img)
-
-    input_shape = img_data.shape    # Should be (h, w, 3)
-    num_actions = 2
-    fe_filters = 4
-    kernel_size = 3
-    action_range = [[0, 100], [-60, 60]]
-    agent = Agent(input_shape, num_actions, fe_filters, kernel_size, action_range)
-
-    action, log_pi = agent.get_action(img_data)
-
-    print(f"action: {action}, log_pi_type: {type(log_pi)}")
-
-
 if __name__ == "__main__":
     print("Initializing objects")
     dt = drivetrain.DriveTrain()
@@ -75,6 +59,6 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps):
         
         # Call update after every episode, this sends over the data to PC and updates the NNs and copies then back
         # to the Rpi
-        agent.update(batch_size)
+        # -- agent.update()
 
     return episode_rewards
