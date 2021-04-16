@@ -29,6 +29,7 @@ The robot should navigate the track continuously, strictly staying within the bo
 - Michael Lee
 - Seung Heon Lee
 - Anuj Tukade
+- Haozhe Zhou
 - \[add your name here if you are a contributor\]
 
 
