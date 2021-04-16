@@ -3,7 +3,7 @@ from picamera import PiCamera
 import numpy as np
 from os import path
 sys.path.append(path.join(path.dirname(__file__), '..'))
-from scripts import preprocess
+from scripts import boost_contrast, resize
 
 class Camera():
     '''
@@ -34,7 +34,7 @@ class Camera():
             below three arguments could be commented
             to use default values of preprocessing file
         '''
-        self.args['size'] = self.width if self.width < self.height else self.height
+        self.size = self.width if self.width < self.height else self.height
         self.args['brightness'] = 0
         self.args['contrast'] = 0
         '''---------------------------------------------------'''
@@ -43,15 +43,20 @@ class Camera():
         
     def takePic(self):
         '''
-            below two arguments are required
-            images will not be created without these arugments
+            Create buffer and stores image into the array
+            this is required process to calculate the image
         '''
-        self.args['path'] = "img" + str(self.counter) + ".jpg"
         self.args['image'] = np.empty((self.height, self.width, 3), dtype=np.uint8)
-        '''---------------------------------------------------'''
         self.cam.capture(self.args['image'], 'rgb') #stores frame rgb info to np array
-        preprocess(**self.args) #preprocess the np array and save it as image
+        '''---------------------------------------------------'''
+        '''
+            preprocess the np array by size, brightness, contrast
+        '''
+        self.args['image'] = resize(self.args['image'], self.size)
+        self.args['image'] = boost_contrast(**self.args) #preprocess the np array
         self.counter += 1
+        return self.args['image']
+        
             
     def destroy(self):
         self.cam.close()
