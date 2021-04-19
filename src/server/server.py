@@ -28,6 +28,8 @@ def listen(agent, batch_size):
         # replay_buffer  = ipc.receive_buffer()
         # print("received buffer")
 
+        # append received buffer to agent's replay buffer
+
         # print("updating models...")
         # fe_weights, pi_weights = agent.update(batch_size)
 
