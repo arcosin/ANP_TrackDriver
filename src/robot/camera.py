@@ -52,7 +52,7 @@ class Camera():
         '''
             preprocess the np array by size, brightness, contrast
         '''
-        self.args['image'] = resize(self.args['image'], self.size)
+        #self.args['image'] = resize(self.args['image'], self.size)
         self.args['image'] = boost_contrast(**self.args) #preprocess the np array
         self.counter += 1
         return self.args['image']
