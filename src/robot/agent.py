@@ -35,7 +35,7 @@ class Agent():
 
     def get_action(self, state):
         if state.shape != self.image_size:
-            print(f"Invalid size, expected shape {self.image_size}, got {state}")
+            print(f"Invalid size, expected shape {self.image_size}, got {state.shape}")
             return None
 
         # Assume channel is the last dimension, so we permute
