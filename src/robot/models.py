@@ -51,6 +51,7 @@ class FeatureExtractor(nn.Module):
 
         return (self.out_channels, h2, w2)
 
+# TODO: Remove log_pi calc from here and from agent. 
 class PolicyNetwork(nn.Module):
     def __init__(self, num_inputs, num_actions, load_weights=None):
         super(PolicyNetwork, self).__init__()

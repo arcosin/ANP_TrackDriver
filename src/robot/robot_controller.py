@@ -3,12 +3,12 @@ import camera
 import linetracker
 
 import time
-import torch
+#import torch
 import numpy as np
-from PIL import Image
+#from PIL import Image
 
-from models import FeatureExtractor, PolicyNetwork
-from agent import Agent
+#from models import FeatureExtractor, PolicyNetwork
+#from agent import Agent
 
 timestep = 1 # Seconds
 
@@ -23,7 +23,12 @@ if __name__ == "__main__":
     fe_filters = 4
     kernel_size = 3
     action_range = [[0, 100], [-60, 60]]
-    agent = Agent(input_shape, num_actions, fe_filters, kernel_size, action_range)
+
+    pic = cam.takePic()
+    print(f"Shape: {pic.shape}, type: {type(shape)}")
+    exit()
+
+    #agent = Agent(input_shape, num_actions, fe_filters, kernel_size, action_range)
 
 
 def robot_train(dt, agent, cam, lt, max_episodes, max_steps):

@@ -16,8 +16,8 @@ class Camera():
         Please check if the camera is v1 or v2
     '''
     def __init__(self):
-        self.width=640
-        self.height=480
+        self.width=256
+        self.height=256
         while True:
             try:
                 self.cam = PiCamera()
