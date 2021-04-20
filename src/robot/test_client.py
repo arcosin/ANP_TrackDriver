@@ -9,5 +9,5 @@ if __name__ == "__main__":
     typeOf = "TCP"
     id_s = "A"
 
-    s = TCPNode(id_s, toSend, typeOf, "localhost", 25565)
-    s.serverStart()
+    s = TCPNode(id_s, toSend, typeOf, "192.168.4.10", 25565)
+    s.recv()
