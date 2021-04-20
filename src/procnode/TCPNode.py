@@ -24,13 +24,13 @@ class TCPNode():
         self.server.handle_request()
 
     def startTCPClient(self):
-        self.proxy = xmlrpc.client.ServerProxy(self.host + ":" + str(self.portno))
+        self.proxy = xmlrpc.client.ServerProxy("http://"+ self.host  +":"+str(self.portno)+"/")
 
     def recv(self, block = True):                                               #TODO: Implement for super version and tcp nodes.
         print("IN NODE :" + str(self.id))
         flag = 0
         if self.type == "TCP":
-            self.proxy = xmlrpc.client.ServerProxy(self.host + ":" + str(self.portno))
+            self.proxy = xmlrpc.client.ServerProxy("http://"+ self.host  +":"+str(self.portno)+"/")
             print(self.proxy.reader())
         else:
             super().recv(block = block)
