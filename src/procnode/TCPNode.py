@@ -4,44 +4,26 @@ from collections import defaultdict
 import socket
 
 class TCPNode():
-    def __init__(self, id, object, type, host, port):
-        #super().__init__(id)
+    def __init__(self, object, host, port):
         self.portno = port
-        self.type = type
         self.host = host
         self.object = object
 
-    def reader(self):
+    def getData(self):
         return self.object
 
-    def createProxy(self):
-        self.server.register_function(self.reader, 'reader')
-
-    def serverStart(self):    
+    def setupServer(self):
         self.server = SimpleXMLRPCServer((self.host, self.portno))
-        self.createProxy()
-        print("Listening on port " + str(self.portno) + " ...")
-        self.server.handle_request()
+        self.server.register_function(self.getData, 'getData')
 
-    def startTCPClient(self):
-        self.proxy = xmlrpc.client.ServerProxy("http://"+ self.host  +":"+str(self.portno)+"/")
-
-    def recv(self, block = True):                                               #TODO: Implement for super version and tcp nodes.
-        print("IN NODE :" + str(self.id))
-        flag = 0
-        if self.type == "TCP":
-            self.proxy = xmlrpc.client.ServerProxy("http://"+ self.host  +":"+str(self.portno)+"/")
-            print(self.proxy.reader())
+    def send(self, forever=False):    
+        if forever:
+            self.server.serve_forever()
         else:
-            super().recv(block = block)
+            self.server.handle_request()
+        
+    def setupClient(self):
+        self.proxy = xmlrpc.client.ServerProxy("http://" + self.host + ":" + str(self.portno) + "/")
 
-
-
-
-
-
-
-
-
-
-#===============================================================================
+    def recv(self, block = True):
+        return self.proxy.getData()
