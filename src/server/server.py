@@ -56,8 +56,9 @@ def listen(agent, batch_size):
         replay_recv_node = TCPNode("192.168.4.19", 25565)
         replay_recv_node.setupClient()
         replay_buff = replay_recv_node.recv()
+        print(f"Recieved = {replay_buff}")
 
-        print("Recieved! Sending dict")
+        print("Sending own dict:")
         dic = dict({"Name": "Anuj", "Friend": "Aditya"})
         dict_send_node = TCPNode("0.0.0.0", 25566)
         dict_send_node.setupServer()

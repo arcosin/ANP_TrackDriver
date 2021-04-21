@@ -64,9 +64,11 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps):
 
             pic = next_pic
 
-        print("Sending replay buffer...")
+        dic = dict({"Name": "Shubham", "Friend": "Micheal"})
+        print("Sending replay buffer (temp dict)...")
         replay_send_node.send(replay_buf)
         print("Sent!")
+        time.sleep(5)
         print("Attempting to receive dictionary...")
         wowDict = dict_recv_node.recv()
         print(f"Received dictionary: {wowDict}")
@@ -86,5 +88,5 @@ if __name__ == "__main__":
     action_range = [[0, 100], [-60, 60]]
 
     agent = Agent(input_shape, num_actions, fe_filters, kernel_size, action_range)
-    robot_train(dt, agent, cam, lt, 1, 2)
+    robot_train(dt, agent, cam, lt, 1, 3)
 
