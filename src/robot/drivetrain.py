@@ -42,13 +42,11 @@ class DriveTrain:
         self.minPos = 100
         self.angleRange = 180
 
-        self.curAngle = 0
-
         self.driveSetup()
         self.turnSetup()
 
     def driveSetup(self):
-        #GPIO.setwarnings(False)
+        GPIO.setwarnings(False)
 
         #Broadcomm chip specific pin nums
         GPIO.setmode(GPIO.BCM) 
@@ -131,9 +129,7 @@ class DriveTrain:
             time.sleep(timestep)
             return
         
-        changeAngle = angle - self.curAngle
-        self.curAngle = angle
-        self.turnAngle(changeAngle)
+        self.turnAngle(angle)
         
         if speed < 0:
             self.moveSpeed(-speed, "backward")

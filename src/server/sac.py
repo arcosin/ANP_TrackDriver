@@ -91,7 +91,7 @@ class SACAgent:
     def update(self, batch_size):
         states, actions, rewards, next_states, dones = self.replay_buffer.sample(batch_size)
         states = np.stack(states)
-        next_sttes = np.stack(next_states)
+        next_states = np.stack(next_states)
 
         states = torch.FloatTensor(states).permute(0, 3, 1, 2).to(self.device)
         actions = torch.FloatTensor(actions).to(self.device)
