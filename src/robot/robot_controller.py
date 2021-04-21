@@ -66,7 +66,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps):
 
         dic = dict({"Name": "Shubham", "Friend": "Micheal"})
         print("Sending replay buffer (temp dict)...")
-        replay_send_node.send(replay_buf)
+        replay_send_node.send(dic)
         print("Sent!")
         time.sleep(5)
         print("Attempting to receive dictionary...")
