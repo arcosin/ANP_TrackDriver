@@ -4,8 +4,8 @@ import torch.optim as optim
 from torch.distributions import Normal
 import numpy as np
 
-from models import FeatureExtractor, ValueNetwork, SoftQNetwork, PolicyNetwork
-from replay_buffers import BasicBuffer
+from .models import FeatureExtractor, ValueNetwork, SoftQNetwork, PolicyNetwork
+from .replay_buffers import BasicBuffer
 
 class SACAgent:
     def __init__(self,
@@ -152,4 +152,3 @@ class SACAgent:
 
         self.update_step += 1
         return self.fe.state_dict(), self.pi_net.state_dict()
-

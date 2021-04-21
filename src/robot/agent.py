@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torch.distributions import Normal
 from math import floor
 
-from models import FeatureExtractor, PolicyNetwork
+from .models import FeatureExtractor, PolicyNetwork
 
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)

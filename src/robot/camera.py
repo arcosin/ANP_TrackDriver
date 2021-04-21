@@ -60,5 +60,3 @@ class Camera():
             
     def destroy(self):
         self.cam.close()
-
-

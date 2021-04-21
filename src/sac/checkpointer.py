@@ -5,7 +5,6 @@ import torch.optim as optim
 import json
 import os
 
-
 class checkpointer:
     def __init__(self, model_class, save_dir, save_loc='.', model_params={}):
         self.model_class = model_class
@@ -73,4 +72,3 @@ class checkpointer:
         metafile = open(self.save_path + '/data.json', 'r')
         self.metadata = json.loads(metafile.read())
         metafile.close()
-

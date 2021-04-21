@@ -5,7 +5,6 @@ IR_sensor_right = 19
 IR_sensor_middle = 16
 IR_sensor_left = 20
 
-
 class LineTracker:
     def __init__(self):
         GPIO.setwarnings(False)

@@ -1,3 +1,6 @@
+# NOTE: Ideally we can get rid of this file and import directly from the sac folder,
+#       but I am too small-brained to figure out how to import modules from an outside directory.
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

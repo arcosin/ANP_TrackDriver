@@ -1,6 +1,12 @@
-import socket, pickle, time, env
+# NOTE: This is purely a test file that is used to demonstrate pickle functionality.
+#       It mimics the pipeline that `robot_controller` will follow, but artificially
+#       generates a replay_buffer instead of physically generating data to send.
+#       This file should be deleted once we decide how we want to implement IPC.
+
+import socket, pickle, time
 import numpy as np
-from replay_buffers import BasicBuffer
+from server import env
+from sac import BasicBuffer
 
 def generate_dummy_buffer(image_size=(256, 256, 3), n=100):
     replay_buffer = BasicBuffer(int(1e6))

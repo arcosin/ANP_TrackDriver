@@ -47,4 +47,3 @@ while True:
     print('Received data from server\n')
 
     s.close()
-

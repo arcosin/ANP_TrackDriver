@@ -6,9 +6,9 @@ import pickle
 import numpy as np
 from PIL import Image
 
-import env
+from server import env
 from sac import SACAgent
-from replay_buffers import BasicBuffer
+from sac import BasicBuffer
 # import TCPNode
 
 # Purely for testing purposes
@@ -177,7 +177,4 @@ if __name__ == "__main__":
                      conv_channels=4,
                      checkpoint=None if args['checkpoint_path'] == None else torch.load(args['checkpoint_path']))
 
-    server = TCPNode.TCPNode("server", "server")
-    server.startTCPServer()
     listen(agent, args['batch_size'])
-

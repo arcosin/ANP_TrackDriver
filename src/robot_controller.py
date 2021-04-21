@@ -1,21 +1,22 @@
-import drivetrain
-import camera
-import linetracker
-
 import time
 import torch
 import numpy as np
 from PIL import Image
 
-from models import FeatureExtractor, PolicyNetwork
-from agent import Agent
-from replay_buffers import BasicBuffer
+from robot import Agent
+from robot import Camera
+from robot import DriveTrain
+from robot import LineTracker
 
-import sys
-from os import path
-sys.path.append(path.join(path.dirname(__file__), '..'))
-from procnode import TCPNode
+from sac import FeatureExtractor, PolicyNetwork
+from sac import BasicBuffer
+
 from server import env
+
+# import sys
+# from os import path
+# sys.path.append(path.join(path.dirname(__file__), '..'))
+# from procnode import TCPNode
 
 timestep = 1 # Seconds
 
@@ -24,11 +25,11 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size=32):
     episode_rewards = []
     print(f"Starting training")
 
-    replay_send_node = TCPNode("0.0.0.0", 25565)
-    replay_send_node.setupServer()
+    # replay_send_node = TCPNode("0.0.0.0", 25565)
+    # replay_send_node.setupServer()
 
-    dict_recv_node = TCPNode("192.168.4.10", 25566)
-    dict_recv_node.setupClient()
+    # dict_recv_node = TCPNode("192.168.4.10", 25566)
+    # dict_recv_node.setupClient()
 
     for episode in range(max_episodes):
         episode_reward = 0
@@ -126,9 +127,9 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size=32):
 
 if __name__ == "__main__":
     print("Initializing objects")
-    dt = drivetrain.DriveTrain()
-    cam = camera.Camera()
-    lt = linetracker.LineTracker()
+    dt = DriveTrain()
+    cam = Camera()
+    lt = LineTracker()
 
     input_shape = (256, 256, 3)    # Should be (h, w, c)
     num_actions = 2
@@ -138,4 +139,3 @@ if __name__ == "__main__":
 
     agent = Agent(input_shape, num_actions, fe_filters, kernel_size, action_range)
     robot_train(dt, agent, cam, lt, 1, 3)
-
