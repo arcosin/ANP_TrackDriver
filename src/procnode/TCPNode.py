@@ -4,10 +4,10 @@ from collections import defaultdict
 import socket
 
 class TCPNode():
-    def __init__(self, object, host, port):
+    def __init__(self, host, port):
         self.portno = port
         self.host = host
-        self.object = object
+        self.object = None
 
     def getData(self):
         return self.object
@@ -16,7 +16,8 @@ class TCPNode():
         self.server = SimpleXMLRPCServer((self.host, self.portno))
         self.server.register_function(self.getData, 'getData')
 
-    def send(self, forever=False):    
+    def send(self, obj, forever=False):
+        self.object = obj
         if forever:
             self.server.serve_forever()
         else:

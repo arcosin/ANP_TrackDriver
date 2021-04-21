@@ -1,10 +1,14 @@
 import os
+from os import path
 import sys
 import time
 import torch
 import numpy as np
 from PIL import Image
 from sac import SACAgent
+
+sys.path.append(path.join(path.dirname(__file__), '..'))
+from procnode import TCPNode
 
 # Purely for testing purposes
 def receive_dummy_buffer(image_size, n=100):
@@ -35,18 +39,31 @@ def listen(agent, batch_size):
 
         # print("sending models...")
         # ipc.send_weights(fe_model, pi_model)
-        print('listening for buffer...')
-        input() # simulate waiting
-        replay_buffer = receive_dummy_buffer((256, 256, 3))
-        agent.set_replay_buffer(replay_buffer)
+        #print('listening for buffer...')
+        #input() # simulate waiting
+        #replay_buffer = receive_dummy_buffer((256, 256, 3))
+        #agent.set_replay_buffer(replay_buffer)
 
-        print('updating models...')
-        fe_model, pi_model = agent.update(batch_size)
+        #print('updating models...')
+        #fe_model, pi_model = agent.update(batch_size)
 
-        print('sending updated models...')
-        print(fe_model)
-        print()
-        print(pi_model)
+        #print('sending updated models...')
+        #print(fe_model)
+        #print()
+        #print(pi_model)
+
+        print("Receiving replay buff")
+        replay_recv_node = TCPNode("192.168.4.19", 25565)
+        replay_recv_node.setupClient()
+        replay_buff = replay_recv_node.recv()
+
+        print("Recieved! Sending dict")
+        dic = dict({"Name": "Anuj", "Friend": "Aditya"})
+        dict_send_node = TCPNode("0.0.0.0", 25566)
+        dict_send_node.setupServer()
+        dict_send_node.send(dic)
+        print("Sent!")
+        exit()
 
 def readCommand(argv):
     def default(s):

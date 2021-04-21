@@ -9,6 +9,12 @@ from PIL import Image
 
 from models import FeatureExtractor, PolicyNetwork
 from agent import Agent
+from replay_buffers import BasicBuffer
+
+import sys
+from os import path
+sys.path.append(path.join(path.dirname(__file__), '..'))
+from procnode import TCPNode
 
 timestep = 1 # Seconds
 
@@ -17,9 +23,17 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps):
     episode_rewards = []
     print(f"Starting training")
 
+    replay_send_node = TCPNode("0.0.0.0", 25565)
+    replay_send_node.setupServer()
+
+    dict_recv_node = TCPNode("192.168.4.10", 25566)
+    dict_recv_node.setupClient()
+
     for episode in range(max_episodes):
         episode_reward = 0
         print(f"Episode {episode}")
+
+        replay_buf = BasicBuffer(int(1e6))
 
         pic = cam.takePic()     #expected ndarray of (h, w, c)
         for step in range(max_steps):
@@ -40,7 +54,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps):
                 done = True
             
             next_pic = cam.takePic()
-            #agent.replay_buffer.push(pic, [speed, angle], 1, next_pic, done)
+            replay_buf.push(pic, [speed, angle], 1, next_pic, done)
             episode_reward += 1
 
             if done or step == max_steps - 1:
@@ -49,6 +63,14 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps):
                 break
 
             pic = next_pic
+
+        print("Sending replay buffer...")
+        replay_send_node.send(replay_buf)
+        print("Sent!")
+        print("Attempting to receive dictionary...")
+        wowDict = dict_recv_node.recv()
+        print(f"Received dictionary: {wowDict}")
+
     return episode_rewards
 
 if __name__ == "__main__":
@@ -64,5 +86,5 @@ if __name__ == "__main__":
     action_range = [[0, 100], [-60, 60]]
 
     agent = Agent(input_shape, num_actions, fe_filters, kernel_size, action_range)
-    robot_train(dt, agent, cam, lt, 10, 5)
+    robot_train(dt, agent, cam, lt, 1, 2)
 
