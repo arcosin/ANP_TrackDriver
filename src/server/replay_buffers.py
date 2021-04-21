@@ -4,9 +4,9 @@ from collections import deque
 
 class BasicBuffer:
 
-    def __init__(self, max_size):
+    def __init__(self, max_size=int(1e6), buffer=None):
         self.max_size = max_size
-        self.buffer = deque(maxlen=max_size)
+        self.buffer = deque(maxlen=max_size) if not buffer else deque(buffer, maxlen=max_size)
 
     def push(self, state, action, reward, next_state, done):
         experience = (state, action, np.array([reward]), next_state, done)

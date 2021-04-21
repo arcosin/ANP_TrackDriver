@@ -15,10 +15,11 @@ import sys
 from os import path
 sys.path.append(path.join(path.dirname(__file__), '..'))
 from procnode import TCPNode
+from server import env
 
 timestep = 1 # Seconds
 
-def robot_train(dt, agent, cam, lt, max_episodes, max_steps):
+def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size=32):
     # dt = drivetrain, cam = camera, lt = line tracker
     episode_rewards = []
     print(f"Starting training")
@@ -64,14 +65,62 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps):
 
             pic = next_pic
 
-        dic = dict({"Name": "Shubham", "Friend": "Micheal"})
-        print("Sending replay buffer (temp dict)...")
-        replay_send_node.send(dic)
-        print("Sent!")
-        time.sleep(5)
-        print("Attempting to receive dictionary...")
-        wowDict = dict_recv_node.recv()
-        print(f"Received dictionary: {wowDict}")
+        def TCP_test():
+            dic = dict({"Name": "Shubham", "Friend": "Micheal"})
+            print("Sending replay buffer (temp dict)...")
+            replay_send_node.send(dic)
+            print("Sent!")
+            time.sleep(5)
+            print("Attempting to receive dictionary...")
+            wowDict = dict_recv_node.recv()
+            print(f"Received dictionary: {wowDict}")
+
+        def pickle_test():
+            print("Generating sample from replay buffer of size %s..." % batch_size)
+            start = time.time()
+            replay_buf_sample = replay_buf.sample(batch_size)
+            end = time.time()
+            print("Generated sample in %fs\n" % (end - start))
+
+            print("Pickling sample...")
+            start = time.time()
+            replay_buf_sample = pickle.dumps(replay_buf_sample)
+            end = time.time()
+            print("Pickled sample in %fs\n" % (end - start))
+
+            print("Connecting to server...")
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((env.HOST, env.PORT))
+            print("Connected")
+
+            print("Sending sample to server...")
+            start = time.time()
+            s.sendall(replay_buf_sample)
+            end = time.time()
+            print("Sample sent to server in %fs" % (end - start))
+
+            print("Closing connection...\n")
+            s.close()
+
+            # NOTE: I was not able to get this to work with the same connection,
+            #       so I close it and make a new one. It might be possible to use the same connection.
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((env.HOST, env.PORT))
+            data = []
+            print("Receiving updated models from server...")
+            start = time.time()
+            while True:
+                packet = s.recv(1024)
+                if not packet: break
+                data.append(packet)
+            updated_fe, updated_pi = pickle.loads(b"".join(data))
+            end = time.time()
+            print("Received updated models from server in %fs" % (end - start))
+
+            print("Closing connection...\n")
+            s.close()
+
+        pickle_test()
 
     return episode_rewards
 

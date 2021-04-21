@@ -1,18 +1,18 @@
-import os
-from os import path
 import sys
 import time
 import torch
+import socket
+import pickle
 import numpy as np
 from PIL import Image
-from sac import SACAgent
 
-sys.path.append(path.join(path.dirname(__file__), '..'))
-from procnode import TCPNode
+import env
+from sac import SACAgent
+from replay_buffers import BasicBuffer
+# import TCPNode
 
 # Purely for testing purposes
 def receive_dummy_buffer(image_size, n=100):
-    from replay_buffers import BasicBuffer
     replay_buffer = BasicBuffer(int(1e6))
     for _ in range(n):
         state = np.random.randint(255, size=image_size)
@@ -24,47 +24,96 @@ def receive_dummy_buffer(image_size, n=100):
     return replay_buffer
 
 def listen(agent, batch_size):
-    # NOTE: This is PSEUDOCODE, implementation relies on the IPC API
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind((env.HOST, env.PORT))
+    s.listen(1)
     while True:
+        # NOTE: This is PSEUDOCODE, implementation relies on the IPC API
+        """
         # Listen for robot_controller buffer transmission
-        # print("listening for buffer...")
+        print("listening for buffer...")
 
         # replay_buffer  = ipc.receive_buffer()
-        # print("received buffer")
+        print("received buffer")
 
-        # append received buffer to agent's replay buffer
+        print("updating models...")
+        fe_weights, pi_weights = agent.update(batch_size)
 
-        # print("updating models...")
-        # fe_weights, pi_weights = agent.update(batch_size)
-
-        # print("sending models...")
+        print("sending models...")
         # ipc.send_weights(fe_model, pi_model)
-        #print('listening for buffer...')
-        #input() # simulate waiting
-        #replay_buffer = receive_dummy_buffer((256, 256, 3))
-        #agent.set_replay_buffer(replay_buffer)
+        """
 
-        #print('updating models...')
-        #fe_model, pi_model = agent.update(batch_size)
+        def simulation():
+            print('listening for buffer...')
+            input() # simulate waiting
+            replay_buffer = receive_dummy_buffer((256, 256, 3))
+            agent.set_replay_buffer(replay_buffer)
 
-        #print('sending updated models...')
-        #print(fe_model)
-        #print()
-        #print(pi_model)
+            print('updating models...')
+            fe_model, pi_model = agent.update(batch_size)
 
-        print("Receiving replay buff")
-        replay_recv_node = TCPNode("192.168.4.19", 25565)
-        replay_recv_node.setupClient()
-        replay_buff = replay_recv_node.recv()
-        print(f"Recieved = {replay_buff}")
+            print('sending updated models...')
+            print(fe_model)
+            print()
+            print(pi_model)
 
-        print("Sending own dict:")
-        dic = dict({"Name": "Anuj", "Friend": "Aditya"})
-        dict_send_node = TCPNode("0.0.0.0", 25566)
-        dict_send_node.setupServer()
-        dict_send_node.send(dic)
-        print("Sent!")
-        exit()
+        def TCPNode_test():
+            print("Receiving replay buff")
+            replay_recv_node = TCPNode("192.168.4.19", 25565)
+            replay_recv_node.setupClient()
+            replay_buff = replay_recv_node.recv()
+            print(f"Recieved = {replay_buff}")
+
+            print("Sending own dict:")
+            dic = dict({"Name": "Anuj", "Friend": "Aditya"})
+            dict_send_node = TCPNode("0.0.0.0", 25566)
+            dict_send_node.setupServer()
+            dict_send_node.send(dic)
+            print("Sent!")
+            exit()
+
+        def pickle_test():
+            print("Listening for buffer...")
+            conn, addr = s.accept()
+            print("Connected to %s\n" % str(addr))
+
+            data = []
+            start = time.time()
+            while True:
+                packet = conn.recv(1024)
+                if not packet: break
+                data.append(packet)
+            replay_buffer = pickle.loads(b"".join(data))
+            end = time.time()
+            print("Received replay buffer from bot in %fs" % (end - start))
+            print("Closing connection...\n")
+            conn.close()
+
+            print("Updating models...")
+            agent.set_replay_buffer(BasicBuffer(buffer=replay_buffer))
+            start = time.time()
+            fe_model, pi_model = agent.update(batch_size)
+            end = time.time()
+            print("Finished updating models in %fs\n" % (end - start))
+
+            print("Pickling models...")
+            start = time.time()
+            models = pickle.dumps((fe_model, pi_model))
+            end = time.time()
+            print("Pickled models in %fs\n" % (end - start))
+
+            # NOTE: I was not able to get this to work with the same connection,
+            #       so I close it and make a new one. It might be possible to use the same connection.
+            conn, addr = s.accept()
+            print("Sending updated models...")
+            start = time.time()
+            conn.sendall(models)
+            end = time.time()
+            print("Models sent to bot in %fs" % (end - start))
+            print("Closing connection...\n")
+            conn.close()
+
+        pickle_test()
 
 def readCommand(argv):
     def default(s):
@@ -128,5 +177,7 @@ if __name__ == "__main__":
                      conv_channels=4,
                      checkpoint=None if args['checkpoint_path'] == None else torch.load(args['checkpoint_path']))
 
+    server = TCPNode.TCPNode("server", "server")
+    server.startTCPServer()
     listen(agent, args['batch_size'])
 

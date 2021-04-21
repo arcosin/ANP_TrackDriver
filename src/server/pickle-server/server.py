@@ -5,9 +5,9 @@ import numpy as np
 print("Server is listening on port %s..." % env.PORT)
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((env.HOST, env.PORT))
+s.listen(1)
 
 while True:
-    s.listen(1)
     conn, addr = s.accept()
     print("Connected to %s" % str(addr))
 
