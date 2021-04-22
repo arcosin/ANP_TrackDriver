@@ -6,10 +6,8 @@ import pickle
 import numpy as np
 from PIL import Image
 
-from server import env
 from sac import SACAgent
 from sac import BasicBuffer
-# import TCPNode
 
 # Purely for testing purposes
 def receive_dummy_buffer(image_size, n=100):
@@ -23,9 +21,9 @@ def receive_dummy_buffer(image_size, n=100):
         replay_buffer.push(state, action, reward, next_state, done)
     return replay_buffer
 
-def listen(agent, batch_size):
+def listen(agent, batch_size, host, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((env.HOST, env.PORT))
+    s.bind((host, port))
     s.listen(1)
     while True:
         # NOTE: This is PSEUDOCODE, implementation relies on the IPC API
@@ -109,14 +107,18 @@ def readCommand(argv):
                       help=default('eta, policy learning rate'), default=3e-3)
     parser.add_option('-s', '--size', dest='size', type='int',
                       help=default('image dimension'), default=256)
+    parser.add_option('-B', '--batch', dest='batch_size', type='int',
+                      help=default('batch size'), default=32)
 
     parser.add_option('--checkpoint', dest='checkpoint_path',
                       help=default('Path to saved checkpoint. Must contain:\n\
                                     fe, v_net, tv_net, q1_net, q2_net, pi_net\n\
                                     v_opt, q1_opt, q2_opt, pi_opt'), default=None)
 
-    parser.add_option('-B', '--batch', dest='batch_size', type='int',
-                      help=default('batch size'), default=32)
+    parser.add_option('--host', dest='host',
+                      help=default('server hostname'), default='localhost')
+    parser.add_option('--port', dest='port',type='int',
+                      help=default('port number'), default=1138)
 
     options, junk = parser.parse_args(argv)
     if len(junk) != 0:
@@ -130,6 +132,9 @@ def readCommand(argv):
     args['size'] = (options.size, options.size, 3)
     args['batch_size'] = options.batch_size
     args['checkpoint_path'] = options.checkpoint_path
+
+    args['host'] = options.host
+    args['port'] = options.port
 
     return args
 
@@ -148,4 +153,4 @@ if __name__ == "__main__":
                      conv_channels=4,
                      checkpoint=None if args['checkpoint_path'] == None else torch.load(args['checkpoint_path']))
 
-    listen(agent, args['batch_size'])
+    listen(agent, args['batch_size'], args['host'], args['port'])

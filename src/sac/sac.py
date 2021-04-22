@@ -86,6 +86,10 @@ class SACAgent:
         return action * ((action_range[1] - action_range[0]) / 2 + (action_range[1] + action_range[0]) / 2)
 
     def update(self, batch_size):
+        if len(self.replay_buffer) <= batch_size:
+            print('Replay buffer not large enough to sample, returning models...')
+            return self.fe.state_dict(), self.pi_net.state_dict()
+
         states, actions, rewards, next_states, dones = self.replay_buffer.sample(batch_size)
         states = np.stack(states)
         next_states = np.stack(next_states)

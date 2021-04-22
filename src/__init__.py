@@ -9,5 +9,3 @@ from .robot import Agent
 from .robot import Camera
 from .robot import DriveTrain
 from .robot import LineTracker
-
-from .server import env
