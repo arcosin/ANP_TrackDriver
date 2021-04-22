@@ -66,9 +66,6 @@ class SACAgent:
 
         self.replay_buffer = BasicBuffer(buffer_maxlen)
 
-    def set_replay_buffer(self, replay_buffer):
-        self.replay_buffer = replay_buffer
-
     def get_action(self, state):
         input = torch.from_numpy(state).float().permute(2, 0, 1).unsqueeze(0).to(self.device)
         features = self.fe(input)

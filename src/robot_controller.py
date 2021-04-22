@@ -1,5 +1,7 @@
 import time
 import torch
+import pickle
+import socket
 import numpy as np
 from PIL import Image
 
@@ -18,7 +20,48 @@ from server import env
 # sys.path.append(path.join(path.dirname(__file__), '..'))
 # from procnode import TCPNode
 
-timestep = 1 # Seconds
+timestep = 0.25 # Seconds
+
+def pickle_test(replay_buf):
+    print("Pickling buffer...")
+    start = time.time()
+    replay_buf = pickle.dumps(replay_buf.buffer)
+    end = time.time()
+    print("Pickled buffer in %fs\n" % (end - start))
+
+    print("Connecting to server...")
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((env.HOST, env.PORT))
+    print("Connected")
+
+    print("Sending sample to server...")
+    start = time.time()
+    s.sendall(replay_buf)
+    end = time.time()
+    print("Sample sent to server in %fs" % (end - start))
+
+    print("Closing connection...\n")
+    s.close()
+
+    # NOTE: I was not able to get this to work with the same connection,
+    #       so I close it and make a new one. It might be possible to use the same connection.
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((env.HOST, env.PORT))
+    data = []
+    print("Receiving updated models from server...")
+    start = time.time()
+    while True:
+        packet = s.recv(1024)
+        if not packet: break
+        data.append(packet)
+    updated_fe, updated_pi = pickle.loads(b"".join(data))
+    end = time.time()
+    print("Received updated models from server in %fs" % (end - start))
+    agent.fe.load_state_dict(updated_fe)
+    agent.pi.load_state_dict(updated_pi)
+    print("Updated agent models")
+    print("Closing connection...\n")
+    s.close()
 
 def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size=32):
     # dt = drivetrain, cam = camera, lt = line tracker
@@ -60,64 +103,14 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size=32):
             episode_reward += 1
 
             if done or step == max_steps - 1:
+                dt.driveHalt()
                 episode_rewards.append(episode_reward)
                 print("Episode " + str(episode) + ": " + str(episode_reward))
                 break
 
             pic = next_pic
 
-        def TCP_test():
-            dic = dict({"Name": "Shubham", "Friend": "Micheal"})
-            print("Sending replay buffer (temp dict)...")
-            replay_send_node.send(dic)
-            print("Sent!")
-            time.sleep(5)
-            print("Attempting to receive dictionary...")
-            wowDict = dict_recv_node.recv()
-            print(f"Received dictionary: {wowDict}")
-
-        def pickle_test():
-            print("Pickling buffer...")
-            start = time.time()
-            replay_buf = pickle.dumps(replay_buf.buffer)
-            end = time.time()
-            print("Pickled buffer in %fs\n" % (end - start))
-
-            print("Connecting to server...")
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((env.HOST, env.PORT))
-            print("Connected")
-
-            print("Sending sample to server...")
-            start = time.time()
-            s.sendall(replay_buf)
-            end = time.time()
-            print("Sample sent to server in %fs" % (end - start))
-
-            print("Closing connection...\n")
-            s.close()
-
-            # NOTE: I was not able to get this to work with the same connection,
-            #       so I close it and make a new one. It might be possible to use the same connection.
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((env.HOST, env.PORT))
-            data = []
-            print("Receiving updated models from server...")
-            start = time.time()
-            while True:
-                packet = s.recv(1024)
-                if not packet: break
-                data.append(packet)
-            updated_fe, updated_pi = pickle.loads(b"".join(data))
-            end = time.time()
-            print("Received updated models from server in %fs" % (end - start))
-            agent.fe.load_state_dict(updated_fe)
-            agent.pi.load_state_dict(updated_pi)
-            print("Updated agent models")
-            print("Closing connection...\n")
-            s.close()
-
-        pickle_test()
+        pickle_test(replay_buf)
 
     return episode_rewards
 
@@ -134,4 +127,4 @@ if __name__ == "__main__":
     action_range = [[0, 100], [-60, 60]]
 
     agent = Agent(input_shape, num_actions, fe_filters, kernel_size, action_range)
-    robot_train(dt, agent, cam, lt, 1, 3)
+    robot_train(dt, agent, cam, lt, 1, 10)

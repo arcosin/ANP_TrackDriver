@@ -8,6 +8,9 @@ class BasicBuffer:
         self.max_size = max_size
         self.buffer = deque(maxlen=max_size) if not buffer else deque(buffer, maxlen=max_size)
 
+    def add_to_buffer(self, buffer):
+        self.buffer += buffer
+
     def push(self, state, action, reward, next_state, done):
         experience = (state, action, np.array([reward]), next_state, done)
         self.buffer.append(experience)

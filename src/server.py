@@ -43,35 +43,6 @@ def listen(agent, batch_size):
         # ipc.send_weights(fe_model, pi_model)
         """
 
-        def simulation():
-            print('listening for buffer...')
-            input() # simulate waiting
-            replay_buffer = receive_dummy_buffer((256, 256, 3))
-            agent.set_replay_buffer(replay_buffer)
-
-            print('updating models...')
-            fe_model, pi_model = agent.update(batch_size)
-
-            print('sending updated models...')
-            print(fe_model)
-            print()
-            print(pi_model)
-
-        def TCPNode_test():
-            print("Receiving replay buff")
-            replay_recv_node = TCPNode("192.168.4.19", 25565)
-            replay_recv_node.setupClient()
-            replay_buff = replay_recv_node.recv()
-            print(f"Recieved = {replay_buff}")
-
-            print("Sending own dict:")
-            dic = dict({"Name": "Anuj", "Friend": "Aditya"})
-            dict_send_node = TCPNode("0.0.0.0", 25566)
-            dict_send_node.setupServer()
-            dict_send_node.send(dic)
-            print("Sent!")
-            exit()
-
         def pickle_test():
             print("Listening for buffer...")
             conn, addr = s.accept()
@@ -90,7 +61,7 @@ def listen(agent, batch_size):
             conn.close()
 
             print("Updating models...")
-            agent.set_replay_buffer(BasicBuffer(buffer=replay_buffer))
+            agent.replay_buffer.add_to_buffer(replay_buffer)
             start = time.time()
             fe_model, pi_model = agent.update(batch_size)
             end = time.time()
