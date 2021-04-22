@@ -77,17 +77,11 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size=32):
             print(f"Received dictionary: {wowDict}")
 
         def pickle_test():
-            print("Generating sample from replay buffer of size %s..." % batch_size)
+            print("Pickling buffer...")
             start = time.time()
-            replay_buf_sample = replay_buf.sample(batch_size)
+            replay_buf = pickle.dumps(replay_buf.buffer)
             end = time.time()
-            print("Generated sample in %fs\n" % (end - start))
-
-            print("Pickling sample...")
-            start = time.time()
-            replay_buf_sample = pickle.dumps(replay_buf_sample)
-            end = time.time()
-            print("Pickled sample in %fs\n" % (end - start))
+            print("Pickled buffer in %fs\n" % (end - start))
 
             print("Connecting to server...")
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -96,7 +90,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size=32):
 
             print("Sending sample to server...")
             start = time.time()
-            s.sendall(replay_buf_sample)
+            s.sendall(replay_buf)
             end = time.time()
             print("Sample sent to server in %fs" % (end - start))
 
@@ -117,7 +111,9 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size=32):
             updated_fe, updated_pi = pickle.loads(b"".join(data))
             end = time.time()
             print("Received updated models from server in %fs" % (end - start))
-
+            agent.fe.load_state_dict(updated_fe)
+            agent.pi.load_state_dict(updated_pi)
+            print("Updated agent models")
             print("Closing connection...\n")
             s.close()
 
