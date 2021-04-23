@@ -131,9 +131,7 @@ def readCommand(argv):
         Usage:      python robot_controller.py <options>
     """
     parser = OptionParser(usageStr)
-
-    parser.add_option('--host', dest='host',
-                      help=default('server hostname'), default='data.cs.purdue.edu')
+    parser.add_option('--host', dest='host', help=default('server hostname'), default='data.cs.purdue.edu')
     parser.add_option('--port', dest='port',type='int',
                       help=default('port number'), default=1138)
 

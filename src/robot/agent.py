@@ -32,7 +32,7 @@ class Agent():
         self.num_linear_inputs = out_size_info[0] * out_size_info[1] * out_size_info[2]
         print(f"Agent: Policy Network input shape = {(1, self.num_linear_inputs)}")
 
-        self.pi = PolicyNetwork(self.num_linear_inputs, num_actions, saved_pi_weights)
+        self.pi = PolicyNetwork(self.num_linear_inputs, num_actions, saved_pi_weights=saved_pi_weights)
 
         self.fe.eval()
         self.pi.eval()
