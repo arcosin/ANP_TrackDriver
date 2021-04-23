@@ -9,6 +9,8 @@ from PIL import Image
 from sac import SACAgent
 from sac import BasicBuffer
 
+num_updates = 8
+
 # Purely for testing purposes
 def receive_dummy_buffer(image_size, n=100):
     replay_buffer = BasicBuffer(int(1e6))
@@ -26,63 +28,58 @@ def listen(agent, batch_size, host, port):
     s.bind((host, port))
     s.listen(1)
     while True:
-        # NOTE: This is PSEUDOCODE, implementation relies on the IPC API
-        """
-        # Listen for robot_controller buffer transmission
-        print("listening for buffer...")
+        print("Listening for buffer...")
+        conn, addr = s.accept()
+        print("Connected to %s\n" % str(addr))
 
-        # replay_buffer  = ipc.receive_buffer()
-        print("received buffer")
+        data = []
+        start = time.time()
+        while True:
+            packet = conn.recv(1024)
+            if not packet: break
+            data.append(packet)
+        replay_buffer = pickle.loads(b"".join(data))
+        end = time.time()
+        print("Received replay buffer from bot in %fs" % (end - start))
+        print("Closing connection...\n")
+        conn.close()
 
-        print("updating models...")
-        fe_weights, pi_weights = agent.update(batch_size)
+        print("Updating models...")
+        agent.replay_buffer.add_to_buffer(replay_buffer)
+        start = time.time()
 
-        print("sending models...")
-        # ipc.send_weights(fe_model, pi_model)
-        """
+        for i in range(num_updates):
+            s2 = time.time()
+            fe_model, pi_model, completed = agent.update(batch_size)
+            e2 = time.time()
 
-        def pickle_test():
-            print("Listening for buffer...")
-            conn, addr = s.accept()
-            print("Connected to %s\n" % str(addr))
+            if completed == False:
+                print(f"\tNot enough experiences in replay buffer, terminating update sequence")
+                break
 
-            data = []
-            start = time.time()
-            while True:
-                packet = conn.recv(1024)
-                if not packet: break
-                data.append(packet)
-            replay_buffer = pickle.loads(b"".join(data))
-            end = time.time()
-            print("Received replay buffer from bot in %fs" % (end - start))
-            print("Closing connection...\n")
-            conn.close()
+            t_time = s2 - e2
+            print(f"\tFinished update {i} in {t_time}")
+        
+        end = time.time()
+        print("Finished all updates, total time: %fs\n" % (end - start))
 
-            print("Updating models...")
-            agent.replay_buffer.add_to_buffer(replay_buffer)
-            start = time.time()
-            fe_model, pi_model = agent.update(batch_size)
-            end = time.time()
-            print("Finished updating models in %fs\n" % (end - start))
+        print("Pickling models...")
+        start = time.time()
+        models = pickle.dumps((fe_model, pi_model))
+        end = time.time()
+        print("Pickled models in %fs\n" % (end - start))
 
-            print("Pickling models...")
-            start = time.time()
-            models = pickle.dumps((fe_model, pi_model))
-            end = time.time()
-            print("Pickled models in %fs\n" % (end - start))
+        # NOTE: I was not able to get this to work with the same connection,
+        #       so I close it and make a new one. It might be possible to use the same connection.
+        conn, addr = s.accept()
+        print("Sending updated models...")
+        start = time.time()
+        conn.sendall(models)
+        end = time.time()
+        print("Models sent to bot in %fs" % (end - start))
+        print("Closing connection...\n")
+        conn.close()
 
-            # NOTE: I was not able to get this to work with the same connection,
-            #       so I close it and make a new one. It might be possible to use the same connection.
-            conn, addr = s.accept()
-            print("Sending updated models...")
-            start = time.time()
-            conn.sendall(models)
-            end = time.time()
-            print("Models sent to bot in %fs" % (end - start))
-            print("Closing connection...\n")
-            conn.close()
-
-        pickle_test()
 
 def readCommand(argv):
     def default(s):
