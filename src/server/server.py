@@ -5,7 +5,9 @@ import socket
 import pickle
 import numpy as np
 from PIL import Image
+from os import path
 
+sys.path.append(path.join(path.dirname(__file__), '..'))
 from sac import SACAgent
 from sac import BasicBuffer
 

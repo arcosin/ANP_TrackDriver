@@ -13,6 +13,9 @@ from robot import DriveTrain
 from robot import LineTracker
 
 #from sac import FeatureExtractor, PolicyNetwork    # Unnecessary import
+from os import path
+
+sys.path.append(path.join(path.dirname(__file__), '..'))
 from sac import BasicBuffer
 
 timestep = 0.25 # Seconds
