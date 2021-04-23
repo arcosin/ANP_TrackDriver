@@ -11,7 +11,7 @@ from robot import Camera
 from robot import DriveTrain
 from robot import LineTracker
 
-from sac import FeatureExtractor, PolicyNetwork
+#from sac import FeatureExtractor, PolicyNetwork    # Unnecessary import
 from sac import BasicBuffer
 
 timestep = 0.25 # Seconds
@@ -70,7 +70,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
         pic = cam.takePic()     #expected ndarray of (h, w, c)
         for step in range(max_steps):
             done = False
-            action, log_pi = agent.get_action(pic)
+            action = agent.get_action(pic)
 
             speed = action[0]
             angle = action[1]
