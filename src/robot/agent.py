@@ -61,7 +61,7 @@ class Agent():
         scaled_action = []
         for idx, a in enumerate(action):
             action_range = self.action_range[idx]
-            a = (action_range[1] - action_range[0]) / 2.0 + (action_range[1] + action_range[0]) / 2.0
+            a = a * (action_range[1] - action_range[0]) / 2.0 + (action_range[1] + action_range[0]) / 2.0            
             scaled_action.append(a)
         return scaled_action
 

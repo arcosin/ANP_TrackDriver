@@ -3,6 +3,7 @@ import time
 import torch
 import pickle
 import socket
+import random
 import numpy as np
 from PIL import Image
 
@@ -61,6 +62,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
     episode_rewards = []
     print(f"Starting training")
 
+    action_stack =[]
     for episode in range(max_episodes):
         episode_reward = 0
         print(f"Episode {episode}")
@@ -68,6 +70,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
         replay_buf = BasicBuffer(int(1e6))
 
         pic = cam.takePic()     #expected ndarray of (h, w, c)
+        action_stack.clear()
         for step in range(max_steps):
             done = False
             action = agent.get_action(pic)
@@ -80,6 +83,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
             # Provide absolute speed and angle for this state, wait timestep amount of time before returning
             # NOTE: this call maintains the speed and angle after return. Subsequent calls change it. 
             dt.moveAbsoluteDelay(speed, angle, timestep)
+            action_stack.append((speed, angle, timestep))
 
             if lt.detect()[0] == True:
                 print("\tDetected, terminate episode")
@@ -91,6 +95,12 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
             if done or step == max_steps - 1:
                 dt.driveHalt()
+
+                print("\tStarting automatic rollback")
+                robot_rollback(action_stack)
+                if lt.detect()[0]:
+                    print("\tRollback failed! Please reset the bot back to the track manually")
+
                 episode_rewards.append(episode_reward)
                 print("Episode " + str(episode) + ": " + str(episode_reward))
                 break
@@ -100,6 +110,13 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
         pickle_test(replay_buf, host, port)
 
     return episode_rewards
+
+def robot_rollback(action_stack):
+    # rollback random number of steps to set the robot back to track
+    t = min(random.randint(0, len(action_stack) - 1), 5)
+    for i in range(t):
+        speed, angle, timestep = action_stack.pop()
+        dt.moveAbsoluteDelay(-speed, angle, timestep)
 
 def readCommand(argv):
     def default(s):
