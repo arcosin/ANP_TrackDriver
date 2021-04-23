@@ -1,3 +1,4 @@
+import sys
 import time
 import torch
 import pickle
@@ -10,19 +11,12 @@ from robot import Camera
 from robot import DriveTrain
 from robot import LineTracker
 
-from sac import FeatureExtractor, PolicyNetwork
+#from sac import FeatureExtractor, PolicyNetwork    # Unnecessary import
 from sac import BasicBuffer
-
-from server import env
-
-# import sys
-# from os import path
-# sys.path.append(path.join(path.dirname(__file__), '..'))
-# from procnode import TCPNode
 
 timestep = 0.25 # Seconds
 
-def pickle_test(replay_buf):
+def pickle_test(replay_buf, host, port):
     print("Pickling buffer...")
     start = time.time()
     replay_buf = pickle.dumps(replay_buf.buffer)
@@ -31,7 +25,7 @@ def pickle_test(replay_buf):
 
     print("Connecting to server...")
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((env.HOST, env.PORT))
+    s.connect((host, port))
     print("Connected")
 
     print("Sending sample to server...")
@@ -46,7 +40,7 @@ def pickle_test(replay_buf):
     # NOTE: I was not able to get this to work with the same connection,
     #       so I close it and make a new one. It might be possible to use the same connection.
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((env.HOST, env.PORT))
+    s.connect((host, port))
     data = []
     print("Receiving updated models from server...")
     start = time.time()
@@ -63,16 +57,9 @@ def pickle_test(replay_buf):
     print("Closing connection...\n")
     s.close()
 
-def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size=32):
-    # dt = drivetrain, cam = camera, lt = line tracker
+def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, port):
     episode_rewards = []
     print(f"Starting training")
-
-    # replay_send_node = TCPNode("0.0.0.0", 25565)
-    # replay_send_node.setupServer()
-
-    # dict_recv_node = TCPNode("192.168.4.10", 25566)
-    # dict_recv_node.setupClient()
 
     for episode in range(max_episodes):
         episode_reward = 0
@@ -83,7 +70,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size=32):
         pic = cam.takePic()     #expected ndarray of (h, w, c)
         for step in range(max_steps):
             done = False
-            action, log_pi = agent.get_action(pic)
+            action = agent.get_action(pic)
 
             speed = action[0]
             angle = action[1]
@@ -110,11 +97,38 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size=32):
 
             pic = next_pic
 
-        pickle_test(replay_buf)
+        pickle_test(replay_buf, host, port)
 
     return episode_rewards
 
+def readCommand(argv):
+    def default(s):
+        return s + ' [Default: %default]'
+
+    from optparse import OptionParser
+    usageStr = """
+        PURPOSE:    Begin robot training
+        Usage:      python robot_controller.py <options>
+    """
+    parser = OptionParser(usageStr)
+
+    parser.add_option('--host', dest='host',
+                      help=default('server hostname'), default='data.cs.purdue.edu')
+    parser.add_option('--port', dest='port',type='int',
+                      help=default('port number'), default=1138)
+
+    options, junk = parser.parse_args(argv)
+    if len(junk) != 0:
+        raise Exception('Command line input not understood: ' + str(junk))
+
+    args = dict()
+    args['host'] = options.host
+    args['port'] = options.port
+
+    return args
+
 if __name__ == "__main__":
+    args = readCommand(sys.argv[1:])
     print("Initializing objects")
     dt = DriveTrain()
     cam = Camera()
@@ -127,4 +141,4 @@ if __name__ == "__main__":
     action_range = [[0, 100], [-60, 60]]
 
     agent = Agent(input_shape, num_actions, fe_filters, kernel_size, action_range)
-    robot_train(dt, agent, cam, lt, 1, 10)
+    robot_train(dt, agent, cam, lt, 1, 10, args['host'], args['port'])

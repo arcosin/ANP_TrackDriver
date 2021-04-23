@@ -2,6 +2,7 @@ import time, cv2, sys
 from picamera import PiCamera
 import numpy as np
 from os import path
+
 sys.path.append(path.join(path.dirname(__file__), '..'))
 from scripts import boost_contrast, resize
 

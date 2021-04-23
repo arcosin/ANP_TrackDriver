@@ -4,10 +4,14 @@ import torch.nn.functional as F
 from torch.distributions import Normal
 from math import floor
 
-from .models import FeatureExtractor, PolicyNetwork
-
+import sys
+from os import path
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
+
+#from .models import FeatureExtractor, PolicyNetwork
+sys.path.append(path.join(path.dirname(__file__), '..'))
+from sac import FeatureExtractor, PolicyNetwork
 
 class Agent():
     def __init__(self, image_size, num_actions, conv_channels, kernel_size, action_range, saved_fe_weights=None, saved_pi_weights=None):
@@ -46,12 +50,12 @@ class Agent():
         features = self.fe(inp)
         features = features.view(-1, self.num_linear_inputs)
 
-        action_tensor, log_pi_tensor = self.pi.sample(features)
+        action_tensor, _ = self.pi.sample(features)
 
         action = action_tensor.detach().squeeze(0).numpy()
-        log_pi = log_pi_tensor.detach().squeeze(0).numpy()
+        #log_pi = log_pi_tensor.detach().squeeze(0).numpy()
 
-        return self.rescale_action(action), log_pi
+        return self.rescale_action(action)
 
     def rescale_action(self, action):
         scaled_action = []
