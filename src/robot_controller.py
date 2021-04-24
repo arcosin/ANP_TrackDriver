@@ -114,10 +114,12 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
             if detector.detected == True:
                 print("\tDetected, terminate episode")
                 done = True
-            
+                episode_reward += -10   #Adjust
+            else:
+                episode_reward += 1
             next_pic = cam.takePic()
             replay_buf.push(pic, [speed, angle], 1, next_pic, done)
-            episode_reward += 1
+            
 
             if step == max_steps - 1:
                 dt.driveHalt()
