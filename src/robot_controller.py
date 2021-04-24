@@ -4,6 +4,7 @@ import torch
 import pickle
 import socket
 import random
+import threading
 import numpy as np
 from PIL import Image
 
@@ -18,7 +19,22 @@ from robot import LineTracker
 # sys.path.append(path.join(path.dirname(__file__), '..'))
 from sac import BasicBuffer
 
-timestep = 0.25 # Seconds
+timestep = 0.125 # Seconds
+
+class thread(threading.Thread):
+    def __init__(self, name, id, lt):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.id = id
+        self.lt = lt
+        self.detected = False
+        self.kill = False
+
+    def run(self):
+        while not self.kill:
+            if lt.detect()[0] == True:
+                self.detected = True
+
 
 def pickle_test(replay_buf, host, port):
     print("Pickling buffer...")
@@ -74,6 +90,10 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
         pic = cam.takePic()     #expected ndarray of (h, w, c)
         action_stack.clear()
+
+        detector_thread = thread("detector", 1000)
+        detector_thread.start()
+
         for step in range(max_steps):
             done = False
             action = agent.get_action(pic)
@@ -88,7 +108,10 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
             dt.moveAbsoluteDelay(speed, angle, timestep)
             action_stack.append((speed, angle, timestep))
 
-            if lt.detect()[0] == True:
+            # if lt.detect()[0] == True:
+            #     print("\tDetected, terminate episode")
+            #     done = True
+            if detector.detected == True:
                 print("\tDetected, terminate episode")
                 done = True
             
@@ -96,9 +119,12 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
             replay_buf.push(pic, [speed, angle], 1, next_pic, done)
             episode_reward += 1
 
-            if done or step == max_steps - 1:
+            if step == max_steps - 1:
                 dt.driveHalt()
-
+                episode_rewards.append(episode_reward)
+                print("Episode " + str(episode) + ": " + str(episode_reward))
+                break
+            elif done:
                 print("\tStarting automatic rollback")
                 robot_rollback(action_stack)
                 if lt.detect()[0]:
@@ -109,6 +135,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
                 break
 
             pic = next_pic
+            detector.kill = True
 
         pickle_test(replay_buf, host, port)
 
@@ -159,4 +186,4 @@ if __name__ == "__main__":
     action_range = [[0, 100], [-60, 60]]
 
     agent = Agent(input_shape, num_actions, fe_filters, kernel_size, action_range)
-    robot_train(dt, agent, cam, lt, 1, 10, 32, args['host'], args['port'])
+    robot_train(dt, agent, cam, lt, 5, 50, 32, args['host'], args['port'])
