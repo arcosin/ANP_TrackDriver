@@ -36,12 +36,13 @@ class thread(threading.Thread):
                 self.detected = True
 
 
-def pickle_test(replay_buf, host, port):
-    print("Pickling buffer...")
+def pickle_test(replay_buf, episode_rewards, host, port):
+    data = {"replay_buf": replay_buf.buffer, "episode_rewards": episode_rewards}
+    print("Pickling buffer and episode rewards...")
     start = time.time()
-    replay_buf = pickle.dumps(replay_buf.buffer)
+    data = pickle.dumps(data)
     end = time.time()
-    print("Pickled buffer in %fs\n" % (end - start))
+    print("Pickled buffer and episode rewards in %fs\n" % (end - start))
 
     print("Connecting to server...")
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -50,7 +51,7 @@ def pickle_test(replay_buf, host, port):
 
     print("Sending sample to server...")
     start = time.time()
-    s.sendall(replay_buf)
+    s.sendall(data)
     end = time.time()
     print("Sample sent to server in %fs" % (end - start))
 
@@ -139,7 +140,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
             pic = next_pic
             detector.kill = True
 
-        pickle_test(replay_buf, host, port)
+        pickle_test(replay_buf, episode_rewards, host, port)
 
     return episode_rewards
 
@@ -160,7 +161,7 @@ def readCommand(argv):
         Usage:      python robot_controller.py <options>
     """
     parser = OptionParser(usageStr)
-    parser.add_option('--host', dest='host', help=default('server hostname'), default='data.cs.purdue.edu')
+    parser.add_option('--host', dest='host', help=default('server hostname'), default='localhost')
     parser.add_option('--port', dest='port',type='int',
                       help=default('port number'), default=1138)
 
