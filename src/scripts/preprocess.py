@@ -61,7 +61,7 @@ def default(str):
   return str + ' [Default: %default]'
 
 
-def preprocess(image, size=DEFAULT_SIZE, brightness=DEFAULT_BRIGHTNESS, contrast=DEFAULT_CONTRAST, path=None):
+def preprocess(image, size=DEFAULT_SIZE, brightness=DEFAULT_BRIGHTNESS, contrast=DEFAULT_CONTRAST, path=None, sample=False):
   res = boost_contrast(resize(image, size), brightness, contrast)
   if path:
     cv2.imwrite(path, res)

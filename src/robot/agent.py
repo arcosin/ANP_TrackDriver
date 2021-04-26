@@ -18,17 +18,17 @@ class Agent():
         # Image_size a tuple where 0 = height, 1 = width, 2 = num_channels
         if type(kernel_size) is not tuple:
             kernel_size = (kernel_size, kernel_size)
-        
+
         self.image_size = image_size
         self.action_range = action_range
 
         print(f"Agent: Image input shape (ndarray) = {image_size}")
 
         self.fe = FeatureExtractor(image_size[2], conv_channels, kernel_size, saved_fe_weights)
-        
+
         out_size_info = self.fe.get_output_size(image_size)
         print(f"Agent: Feature Extractor out shape = {out_size_info}")
-        
+
         self.num_linear_inputs = out_size_info[0] * out_size_info[1] * out_size_info[2]
         print(f"Agent: Policy Network input shape = {(1, self.num_linear_inputs)}")
 
@@ -55,14 +55,17 @@ class Agent():
         action = action_tensor.detach().squeeze(0).numpy()
         #log_pi = log_pi_tensor.detach().squeeze(0).numpy()
 
-        return self.rescale_action(action)
+        #return self.rescale_action(action)
+        return self.rescale_action(action), action
 
     def rescale_action(self, action):
         scaled_action = []
         for idx, a in enumerate(action):
             action_range = self.action_range[idx]
-            a = a * (action_range[1] - action_range[0]) / 2.0 + (action_range[1] + action_range[0]) / 2.0            
+            a = a * (action_range[1] - action_range[0]) / 2.0 + (action_range[1] + action_range[0]) / 2.0
             scaled_action.append(a)
+        scaled_action[0] += 50
+        if scaled_action[0] < 10: scaled_action[0] = 0
         return scaled_action
 
     def load_weights(self, fe_weights, pi_weights):

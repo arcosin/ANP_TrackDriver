@@ -82,11 +82,14 @@ class SACAgent:
         return self.rescale_action(action)
 
     def rescale_action(self, action):
+        print('action: ', action)
         scaled_action = []
         for idx, a in enumerate(action):
             action_range = self.action_range[idx]
-            a = a * (action_range[1] - action_range[0]) / 2.0 + (action_range[1] + action_range[0]) / 2.0            
+            a = a * (action_range[1] - action_range[0]) / 2.0 + (action_range[1] + action_range[0]) / 2.0
             scaled_action.append(a)
+        scaled_action[0] += 50
+        print('scaled action: ', scaled_action)
         return scaled_action
 
     def update(self, batch_size):
