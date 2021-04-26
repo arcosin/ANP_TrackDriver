@@ -13,6 +13,7 @@ from sac import SACAgent
 from sac import BasicBuffer
 
 num_updates = 8
+episode_rewards = []
 
 # Purely for testing purposes
 def receive_dummy_buffer(image_size, n=100):
@@ -43,7 +44,7 @@ def listen(agent, batch_size, host, port):
             data.append(packet)
         data = pickle.loads(b"".join(data))
         replay_buffer = data["replay_buf"]
-        episode_rewards = data["episode_rewards"]
+        episode_rewards.append(data["episode_reward"])
         end = time.time()
         print("Received replay buffer and episode_rewards from bot in %fs" % (end - start))
         print("Closing connection...\n")
@@ -92,8 +93,11 @@ def listen(agent, batch_size, host, port):
         conn.close()
 
 def update_reward_graph(episode_rewards):
+    avg_reward = sum(episode_rewards) / len(episode_rewards)
     plt.clf()
     plt.plot([*range(len(episode_rewards))], episode_rewards, color='red')
+    plt.axhline(y = avg_reward, color = 'blue', linestyle = '--', label='avg=%s' % avg_reward)
+    plt.title('Reward over Time')
     plt.xlabel('Episode')
     plt.ylabel('Reward')
     plt.savefig(LOG_PATH)
@@ -107,6 +111,8 @@ def readCommand(argv):
         PURPOSE:    Begin server to transmit updated policy network weights to bot
         USAGE:      python server.py <options>
     """
+
+    default_lr = 3e-5
     parser = OptionParser(usageStr)
 
     parser.add_option('-t', '--tau', dest='tau', type='float',
@@ -114,11 +120,11 @@ def readCommand(argv):
     parser.add_option('-g', '--gamma', dest='gamma', type='float',
                       help=default('gamma, discount factor'), default=0.99)
     parser.add_option('-a', '--alpha', dest='alpha', type='float',
-                      help=default('alpha, value learning rate'), default=3e-3)
+                      help=default('alpha, value learning rate'), default=default_lr)
     parser.add_option('-b', '--beta', dest='beta', type='float',
-                      help=default('beta, q learning rate'), default=3e-3)
+                      help=default('beta, q learning rate'), default=default_lr)
     parser.add_option('-e', '--eta', dest='eta', type='float',
-                      help=default('eta, policy learning rate'), default=3e-3)
+                      help=default('eta, policy learning rate'), default=default_lr)
     parser.add_option('-s', '--size', dest='size', type='int',
                       help=default('image dimension'), default=256)
     parser.add_option('-B', '--batch', dest='batch_size', type='int',
@@ -159,7 +165,7 @@ if __name__ == "__main__":
     LOG_PATH = "./logs/" + str(datetime.now()) + '-reward-graph.png'
 
     args = readCommand(sys.argv[1:])
-    agent = SACAgent(action_range=[[0, 100], [-60, 60]],
+    agent = SACAgent(action_range=[[-50, 50], [-60, 60]],
                      action_dim=2,
                      gamma=args['gamma'],
                      tau=args['tau'],

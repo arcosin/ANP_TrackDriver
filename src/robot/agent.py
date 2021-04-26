@@ -55,7 +55,6 @@ class Agent():
         action = action_tensor.detach().squeeze(0).numpy()
         #log_pi = log_pi_tensor.detach().squeeze(0).numpy()
 
-        #return self.rescale_action(action)
         return self.rescale_action(action), action
 
     def rescale_action(self, action):
