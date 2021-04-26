@@ -137,7 +137,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
                 break
 
             pic = next_pic
-            detector.kill = True
+        detector.kill = True
 
         pickle_test(replay_buf, host, port)
 
