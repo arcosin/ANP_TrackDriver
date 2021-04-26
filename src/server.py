@@ -5,6 +5,7 @@ import socket
 import pickle
 import numpy as np
 from PIL import Image
+import matplotlib.pyplot as plt
 # from os import path
 
 # sys.path.append(path.join(path.dirname(__file__), '..'))
@@ -40,9 +41,11 @@ def listen(agent, batch_size, host, port):
             packet = conn.recv(1024)
             if not packet: break
             data.append(packet)
-        replay_buffer = pickle.loads(b"".join(data))
+        data = pickle.loads(b"".join(data))
+        replay_buffer = data["replay_buf"]
+        episode_rewards = data["episode_rewards"]
         end = time.time()
-        print("Received replay buffer from bot in %fs" % (end - start))
+        print("Received replay buffer and episode_rewards from bot in %fs" % (end - start))
         print("Closing connection...\n")
         conn.close()
 
@@ -65,6 +68,12 @@ def listen(agent, batch_size, host, port):
         end = time.time()
         print("Finished all updates, total time: %fs\n" % (end - start))
 
+        print("Updating reward graph...")
+        start = time.time()
+        update_reward_graph(episode_rewards)
+        end = time.time()
+        print("Updated reward graph in %fs\n" % (end - start))
+
         print("Pickling models...")
         start = time.time()
         models = pickle.dumps((fe_model, pi_model))
@@ -82,6 +91,12 @@ def listen(agent, batch_size, host, port):
         print("Closing connection...\n")
         conn.close()
 
+def update_reward_graph(episode_rewards):
+    plt.clf()
+    plt.plot([*range(len(episode_rewards))], episode_rewards, color='red')
+    plt.xlabel('Episode')
+    plt.ylabel('Reward')
+    plt.savefig(LOG_PATH)
 
 def readCommand(argv):
     def default(s):
@@ -139,6 +154,10 @@ def readCommand(argv):
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    from datetime import datetime
+    LOG_PATH = "./logs/" + str(datetime.now()) + '-reward-graph.png'
+
     args = readCommand(sys.argv[1:])
     agent = SACAgent(action_range=[[0, 100], [-60, 60]],
                      action_dim=2,
