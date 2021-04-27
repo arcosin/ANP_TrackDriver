@@ -31,6 +31,9 @@ def listen(agent, batch_size, host, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((host, port))
     s.listen(1)
+
+    episode_num = 0
+
     while True:
         print("Listening for buffer...")
         conn, addr = s.accept()
@@ -50,6 +53,11 @@ def listen(agent, batch_size, host, port):
         print("Closing connection...\n")
         conn.close()
 
+        # Save some images
+        print("Saving images...")
+        save_episode_pictures(replay_buffer, episode_num, 3)
+        episode_num += 1
+
         print("Updating models...")
         agent.replay_buffer.add_to_buffer(replay_buffer)
         start = time.time()
@@ -63,7 +71,7 @@ def listen(agent, batch_size, host, port):
                 print(f"\tNot enough experiences in replay buffer, terminating update sequence")
                 break
 
-            t_time = s2 - e2
+            t_time = e2 - s2
             print(f"\tFinished update {i} in {t_time}")
         
         end = time.time()
@@ -98,6 +106,20 @@ def listen(agent, batch_size, host, port):
         print("Models sent to bot in %fs" % (end - start))
         print("Closing connection...\n")
         conn.close()
+
+# Give sample=-1 to save all images
+def save_episode_pictures(replay_buf, episode_num, sample):
+    import random
+    if sample > 0:
+        batch = random.sample(replay_buf, sample)
+    else:
+        batch = replay_buf
+    i = 0
+    for (state, _, _, _, _) in batch:
+        Im = Image.fromarray(state)
+        savepath = PIC_DIR + "img" + str(episode_num) + str(i) +".jpg"
+        Im.save(savepath)
+        i += 1
 
 def update_reward_graph(episode_rewards):
     avg_reward = sum(episode_rewards) / len(episode_rewards)
@@ -184,6 +206,7 @@ if __name__ == "__main__":
     now = str(datetime.now())
     REWARD_PATH = './logs/reward-graphs/' + now + '-reward-graph.png'
     LOSS_PATH = './logs/loss-graphs/' + now + '-loss-graph.png'
+    PIC_DIR = "./logs/images/" + now + "/"
 
     args = readCommand(sys.argv[1:])
     agent = SACAgent(action_range=[[-50, 50], [-60, 60]],
