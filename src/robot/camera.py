@@ -16,7 +16,7 @@ class Camera():
         frame rates are also limited by each mode
         Please check if the camera is v1 or v2
     '''
-    def __init__(self, sensor_mode=7, framerate=60, width=256, height=256):
+    def __init__(self, sensor_mode=7, framerate=60, width=256, height=256, brightness=64, contrast=64):
         self.width=width
         self.height=height
         while True:
@@ -36,12 +36,12 @@ class Camera():
             to use default values of preprocessing file
         '''
         self.size = self.width if self.width < self.height else self.height
-        self.args['brightness'] = 0
-        self.args['contrast'] = 0
+        self.args['brightness'] = brightness
+        self.args['contrast'] = contrast
         '''---------------------------------------------------'''
         time.sleep(5) # Wait for lens to warm up
         self.counter = 0
-        
+
     def takePic(self):
         '''
             Create buffer and stores image into the array
@@ -57,13 +57,13 @@ class Camera():
         self.args['image'] = boost_contrast(**self.args) #preprocess the np array
         self.counter += 1
         return self.args['image']
-        
-            
+
+
     def destroy(self):
         self.cam.close()
 
 if __name__ == "__main__":
-    camera = Camera(sensor_mode=5)
+    camera = Camera(sensor_mode=5, brightness=64, contrast=64)
     from PIL import Image
     im = Image.fromarray(camera.takePic())
-    im.save('./7.jpg')
+    im.save('./5.jpg')
