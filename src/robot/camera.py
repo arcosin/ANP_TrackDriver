@@ -66,4 +66,4 @@ if __name__ == "__main__":
     camera = Camera(sensor_mode=5)
     from PIL import Image
     im = Image.fromarray(camera.takePic())
-    im.save('./foo.jpg')
+    im.save('./7.jpg')

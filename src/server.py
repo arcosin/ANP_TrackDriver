@@ -55,7 +55,7 @@ def listen(agent, batch_size, host, port):
 
         # Save some images
         print("Saving images...")
-        save_episode_pictures(replay_buffer, episode_num, 3)
+        save_episode_pictures(replay_buffer, episode_num, 10)
         episode_num += 1
 
         print("Updating models...")
@@ -110,6 +110,7 @@ def listen(agent, batch_size, host, port):
 # Give sample=-1 to save all images
 def save_episode_pictures(replay_buf, episode_num, sample):
     import random
+    if sample > len(replay_buf): sample = len(replay_buf)
     if sample > 0:
         batch = random.sample(replay_buf, sample)
     else:
@@ -207,6 +208,8 @@ if __name__ == "__main__":
     REWARD_PATH = './logs/reward-graphs/' + now + '-reward-graph.png'
     LOSS_PATH = './logs/loss-graphs/' + now + '-loss-graph.png'
     PIC_DIR = "./logs/images/" + now + "/"
+    import os
+    os.mkdir(PIC_DIR)
 
     args = readCommand(sys.argv[1:])
     agent = SACAgent(action_range=[[-50, 50], [-60, 60]],

@@ -73,7 +73,7 @@ class SACAgent:
     def update(self, batch_size):
         if len(self.replay_buffer) <= batch_size:
             print('Replay buffer not large enough to sample, returning models...')
-            return self.fe.state_dict(), self.pi_net.state_dict(), False
+            return self.fe.state_dict(), self.pi_net.state_dict(), False, None
 
         states, actions, rewards, next_states, dones = self.replay_buffer.sample(batch_size)
         states = np.stack(states)
