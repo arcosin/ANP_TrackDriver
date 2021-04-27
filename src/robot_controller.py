@@ -125,6 +125,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
                 print("Episode " + str(episode) + ": " + str(episode_reward))
                 break
             elif done:
+                # TODO: Fix rollback procedure
                 #print("\tStarting automatic rollback")
                 #robot_rollback(action_stack)
                 #if lt.detect()[0]:
@@ -198,4 +199,3 @@ if __name__ == "__main__":
     robot_train(dt, agent, cam, lt,
                 max_episodes=50, max_steps=50, batch_size=32,
                 host=args['host'], port=args['port'])
-

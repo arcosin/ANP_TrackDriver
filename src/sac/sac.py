@@ -124,6 +124,7 @@ class SACAgent:
         q2_loss.backward(retain_graph=True)
         self.q2_optimizer.step()
 
+        losses = None
         if self.update_step % self.delay_step == 0:
             new_actions, log_pi = self.pi_net.sample(features)
             min_q = torch.min(
@@ -132,6 +133,9 @@ class SACAgent:
             )
             pi_loss = (log_pi - min_q).mean()
             self.logFile.write('pi_loss: %s\n\n' % pi_loss.item())
+            losses = { 'v_loss': v_loss.item(), 
+                       'q_loss': min(q1_loss.item(),q2_loss.item()),
+                       'pi_loss': pi_loss.item() }
 
             self.pi_optimizer.zero_grad()
             pi_loss.backward(retain_graph=True)
@@ -143,4 +147,4 @@ class SACAgent:
             self.logFile.write('\n\n')
 
         self.update_step += 1
-        return self.fe.state_dict(), self.pi_net.state_dict(), True
+        return self.fe.state_dict(), self.pi_net.state_dict(), True, losses

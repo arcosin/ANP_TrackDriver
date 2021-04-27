@@ -9,7 +9,6 @@ from os import path
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
-#from .models import FeatureExtractor, PolicyNetwork
 sys.path.append(path.join(path.dirname(__file__), '..'))
 from sac import FeatureExtractor, PolicyNetwork
 
@@ -53,7 +52,6 @@ class Agent():
         action_tensor, _ = self.pi.sample(features)
 
         action = action_tensor.detach().squeeze(0).numpy()
-        #log_pi = log_pi_tensor.detach().squeeze(0).numpy()
 
         return self.rescale_action(action), action
 

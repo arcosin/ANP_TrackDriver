@@ -56,7 +56,7 @@ def listen(agent, batch_size, host, port):
 
         for i in range(num_updates):
             s2 = time.time()
-            fe_model, pi_model, completed = agent.update(batch_size)
+            fe_model, pi_model, completed, losses = agent.update(batch_size)
             e2 = time.time()
 
             if completed == False:
@@ -74,6 +74,13 @@ def listen(agent, batch_size, host, port):
         update_reward_graph(episode_rewards)
         end = time.time()
         print("Updated reward graph in %fs\n" % (end - start))
+
+        if losses:
+            print("Updating loss graph...")
+            start = time.time()
+            update_loss_graph(losses)
+            end = time.time()
+            print("Updated loss graph in %fs\n" % (end - start))
 
         print("Pickling models...")
         start = time.time()
@@ -100,7 +107,19 @@ def update_reward_graph(episode_rewards):
     plt.title('Reward over Time')
     plt.xlabel('Episode')
     plt.ylabel('Reward')
-    plt.savefig(LOG_PATH)
+    plt.savefig(REWARD_PATH)
+
+def update_loss_graph(losses):
+    n = len(losses['v_loss'])
+    x = [*range(0, n * agent.delay_step, agent.delay_step)]
+    plt.clf()
+    plt.plot(x, losses['v_loss'], color='blue', label='v_loss')
+    plt.plot(x, losses['q_loss'], color='red', label='q_loss')
+    plt.plot(x, losses['pi_loss'], color='purple', label='pi_loss')
+    plt.title('Loss over Time with Delay Step %s' % agent.delay_step)
+    plt.xlabel('Episode')
+    plt.ylabel('Loss')
+    plt.savefig(LOSS_PATH)
 
 def readCommand(argv):
     def default(s):
@@ -162,7 +181,9 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     from datetime import datetime
-    LOG_PATH = "./logs/" + str(datetime.now()) + '-reward-graph.png'
+    now = str(datetime.now())
+    REWARD_PATH = './logs/reward-graphs/' + now + '-reward-graph.png'
+    LOSS_PATH = './logs/loss-graphs/' + now + '-loss-graph.png'
 
     args = readCommand(sys.argv[1:])
     agent = SACAgent(action_range=[[-50, 50], [-60, 60]],
