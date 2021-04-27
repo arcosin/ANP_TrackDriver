@@ -16,14 +16,14 @@ class Camera():
         frame rates are also limited by each mode
         Please check if the camera is v1 or v2
     '''
-    def __init__(self):
-        self.width=256
-        self.height=256
+    def __init__(self, sensor_mode=7, framerate=60, width=256, height=256):
+        self.width=width
+        self.height=height
         while True:
             try:
                 self.cam = PiCamera()
-                self.cam.sensor_mode = 7
-                self.framerate=60
+                self.cam.sensor_mode = sensor_mode
+                self.framerate=framerate
                 self.cam.resolution = (self.width, self.height)
                 break
             except:
@@ -61,3 +61,9 @@ class Camera():
             
     def destroy(self):
         self.cam.close()
+
+if __name__ == "__main__":
+    camera = Camera(sensor_mode=5)
+    from PIL import Image
+    im = Image.fromarray(camera.takePic())
+    im.save('./foo.jpg')

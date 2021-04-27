@@ -117,7 +117,7 @@ def save_episode_pictures(replay_buf, episode_num, sample):
     i = 0
     for (state, _, _, _, _) in batch:
         Im = Image.fromarray(state)
-        savepath = PIC_DIR + "img" + str(episode_num) + str(i) +".jpg"
+        savepath = PIC_DIR + "img" + str(episode_num) + '-' + str(i) + ".jpg"
         Im.save(savepath)
         i += 1
 
