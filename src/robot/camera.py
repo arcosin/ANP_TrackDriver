@@ -47,7 +47,7 @@ class Camera():
             Create buffer and stores image into the array
             this is required process to calculate the image
         '''
-        self.args['image'] = np.empty((self.width, self.height, 3), dtype=np.uint8)
+        self.args['image'] = np.empty((self.height, self.width, 3), dtype=np.uint8)
         self.cam.capture(self.args['image'], 'rgb') #stores frame rgb info to np array
         '''---------------------------------------------------'''
         '''
