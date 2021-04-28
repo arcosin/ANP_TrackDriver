@@ -62,7 +62,7 @@ class Agent():
             a = a * (action_range[1] - action_range[0]) / 2.0 + (action_range[1] + action_range[0]) / 2.0
             scaled_action.append(a)
         scaled_action[0] += 50
-        if scaled_action[0] < 10: scaled_action[0] = 0
+        if scaled_action[0] < 20: scaled_action[0] = 0
         return scaled_action
 
     def load_weights(self, fe_weights, pi_weights):
