@@ -131,3 +131,8 @@ dmypy.json
 # Images and videos
 src/images/
 src/videos/
+src/logs/images/*
+src/logs/loss-graphs/*
+src/logs/reward-graphs/*
+src/logs/*.png
+src/logs/*.txt
