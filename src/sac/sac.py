@@ -147,4 +147,5 @@ class SACAgent:
             self.logFile.write('\n\n')
 
         self.update_step += 1
+        if losses is not None: print('sending losses')
         return self.fe.state_dict(), self.pi_net.state_dict(), True, losses

@@ -16,7 +16,7 @@ class Camera():
         frame rates are also limited by each mode
         Please check if the camera is v1 or v2
     '''
-    def __init__(self, sensor_mode=7, framerate=60, width=256, height=256, brightness=64, contrast=64):
+    def __init__(self, sensor_mode=7, framerate=60, width=512, height=256, brightness=64, contrast=64):
         self.width=width
         self.height=height
         while True:

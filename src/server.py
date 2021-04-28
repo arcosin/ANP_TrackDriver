@@ -83,7 +83,7 @@ def listen(agent, batch_size, host, port):
         end = time.time()
         print("Updated reward graph in %fs\n" % (end - start))
 
-        if losses:
+        if losses is not None:
             print("Updating loss graph...")
             start = time.time()
             update_loss_graph(losses)
@@ -167,6 +167,7 @@ def readCommand(argv):
                       help=default('beta, q learning rate'), default=default_lr)
     parser.add_option('-e', '--eta', dest='eta', type='float',
                       help=default('eta, policy learning rate'), default=default_lr)
+    # TODO: Make this accept a tuple
     parser.add_option('-s', '--size', dest='size', type='int',
                       help=default('image dimension'), default=256)
     parser.add_option('-B', '--batch', dest='batch_size', type='int',
@@ -219,7 +220,7 @@ if __name__ == "__main__":
                      v_lr=args['alpha'],
                      q_lr=args['beta'],
                      pi_lr=args['eta'],
-                     image_size=args['size'],
+                     image_size=(512,256,3) # args['size'],
                      kernel_size=(3,3),
                      conv_channels=4,
                      checkpoint=None if args['checkpoint_path'] == None else torch.load(args['checkpoint_path']))
