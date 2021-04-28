@@ -56,6 +56,7 @@ class Camera():
         #self.args['image'] = resize(self.args['image'], self.size)
         self.args['image'] = boost_contrast(**self.args) #preprocess the np array
         self.counter += 1
+        self.args['image'] = self.args['image'].transpose(1, 0, 2)
         return self.args['image']
 
 
@@ -65,5 +66,7 @@ class Camera():
 if __name__ == "__main__":
     camera = Camera(sensor_mode=5, brightness=64, contrast=64)
     from PIL import Image
-    im = Image.fromarray(camera.takePic())
+    pic = camera.takePic()
+    print(pic.shape)
+    im = Image.fromarray(pic).rotate(90,expand=True)
     im.save('./5.jpg')

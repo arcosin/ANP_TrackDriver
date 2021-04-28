@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from sac import SACAgent
 from sac import BasicBuffer
 
-num_updates = 8
+num_updates = 20
 episode_rewards = []
 
 # Purely for testing purposes
@@ -117,9 +117,9 @@ def save_episode_pictures(replay_buf, episode_num, sample):
         batch = replay_buf
     i = 0
     for (state, _, _, _, _) in batch:
-        Im = Image.fromarray(state)
+        im = Image.fromarray(state).rotate(90,expand=True)
         savepath = PIC_DIR + "img" + str(episode_num) + '-' + str(i) + ".jpg"
-        Im.save(savepath)
+        im.save(savepath)
         i += 1
 
 def update_reward_graph(episode_rewards):

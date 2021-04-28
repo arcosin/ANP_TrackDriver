@@ -13,7 +13,6 @@ from robot import Camera
 from robot import DriveTrain
 from robot import LineTracker
 
-#from sac import FeatureExtractor, PolicyNetwork    # Unnecessary import
 # from os import path
 
 # sys.path.append(path.join(path.dirname(__file__), '..'))
@@ -34,7 +33,7 @@ class thread(threading.Thread):
         while not self.kill:
             if lt.detect()[0] == True:
                 self.detected = True
-
+                time.sleep(1)
 
 def pickle_test(replay_buf, episode_rewards, host, port):
     data = {"replay_buf": replay_buf.buffer, "episode_reward": episode_rewards[-1]}
@@ -98,6 +97,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
         sent = False
         for step in range(max_steps):
             done = False
+            print(pic.shape)
             rescaled_action, action = agent.get_action(pic)
 
             speed = rescaled_action[0]
