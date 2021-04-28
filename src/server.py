@@ -220,7 +220,7 @@ if __name__ == "__main__":
                      v_lr=args['alpha'],
                      q_lr=args['beta'],
                      pi_lr=args['eta'],
-                     image_size=(512,256,3) # args['size'],
+                     image_size=(512,256,3), # args['size'],
                      kernel_size=(3,3),
                      conv_channels=4,
                      checkpoint=None if args['checkpoint_path'] == None else torch.load(args['checkpoint_path']))

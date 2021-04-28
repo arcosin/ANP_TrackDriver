@@ -89,7 +89,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
         replay_buf = BasicBuffer(int(1e6))
 
-        pic = cam.takePic()     #expected ndarray of (h, w, c)
+        pic = cam.takePic()     #expected ndarray of (w, h, c)
         action_stack.clear()
 
         detector = thread("detector", 1000, lt)
