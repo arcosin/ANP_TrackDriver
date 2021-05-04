@@ -207,7 +207,7 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     from datetime import datetime
-    now = str(datetime.now())
+    now = str(datetime.now()).replace(":", "-") # For windoge compatibility
     REWARD_PATH = './logs/reward-graphs/' + now + '-reward-graph.png'
     LOSS_PATH = './logs/loss-graphs/' + now + '-loss-graph.png'
     PIC_DIR = "./logs/images/" + now + "/"
@@ -216,17 +216,17 @@ if __name__ == "__main__":
 
     args = readCommand(sys.argv[1:])
 
-    chkpt = Checkpointer(model_class=SACAgent, save_dir=models, model_params={
-        "action_range"=[[-50, 50], [-60, 60]],
-        "action_dim"=2,
-        "gamma"=args['gamma'],
-        "tau"=args['tau'],
-        "v_lr"=args['alpha'],
-        "q_lr"=args['beta'],
-        "pi_lr"=args['eta'],
-        "image_size"=(512,256,3), # args['size'],
-        "kernel_size"=(3,3),
-        "conv_channels"=4,
+    chkpt = Checkpointer(model_class=SACAgent, save_dir="./models", model_params={
+        "action_range":[[-50, 50], [-60, 60]],
+        "action_dim":2,
+        "gamma":args['gamma'],
+        "tau":args['tau'],
+        "v_lr":args['alpha'],
+        "q_lr":args['beta'],
+        "pi_lr":args['eta'],
+        "image_size":(512,256,3), # args['size'],
+        "kernel_size":(3,3),
+        "conv_channels":4,
     })
 
     if args['checkpoint'] >= 0:

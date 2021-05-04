@@ -1,0 +1,1 @@
+{"hyperparameters": {"action_range": [[-50, 50], [-60, 60]], "action_dim": 2, "gamma": 0.99, "tau": 0.005, "v_lr": 3e-05, "q_lr": 3e-05, "pi_lr": 3e-05, "image_size": [512, 256, 3], "kernel_size": [3, 3], "conv_channels": 4}, "checkpoints": [], "checkpoint_scores": [], "last_checkpoint_id": 0}
