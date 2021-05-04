@@ -6,12 +6,12 @@ import numpy as np
 
 from .models import FeatureExtractor, ValueNetwork, SoftQNetwork, PolicyNetwork
 from .replay_buffers import BasicBuffer
+from .checkpointer import Checkpointer
 
 class SACAgent:
     def __init__(self,
                  action_range, action_dim, gamma, tau, v_lr, q_lr, pi_lr, buffer_maxlen=int(1e6),
                  image_size=(256,256,3), kernel_size=(3,3), conv_channels=4,
-                 checkpoint=None,
                  logFile='logs/losses.txt'):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -27,32 +27,18 @@ class SACAgent:
         # Logging
         self.logFile = open(logFile, 'w')
 
-        if checkpoint == None: checkpoint = {}
-        saved_fe = checkpoint.get('fe', None)
-
-        saved_v_net  = checkpoint.get('v_net', None)
-        saved_tv_net = checkpoint.get('tv_net', None)
-        saved_q1_net = checkpoint.get('q1_net', None)
-        saved_q2_net = checkpoint.get('q2_net', None)
-        saved_pi_net = checkpoint.get('pi_net', None)
-
-        saved_v_opt  = checkpoint.get('v_opt', None)
-        saved_q1_opt = checkpoint.get('q1_opt', None)
-        saved_q2_opt = checkpoint.get('q2_opt', None)
-        saved_pi_opt = checkpoint.get('pi_opt', None)
-
         # Network initialization
-        self.fe = FeatureExtractor(image_size[2], conv_channels, kernel_size, saved_fe).to(self.device)
+        self.fe = FeatureExtractor(image_size[2], conv_channels, kernel_size).to(self.device)
         self.in_dim = self.fe.get_output_size(image_size)
         self.in_dim = np.prod(self.in_dim)
 
-        self.v_net = ValueNetwork(self.in_dim, 1, saved_v_net=saved_v_net).to(self.device)
-        self.target_v_net = ValueNetwork(self.in_dim, 1, saved_v_net=saved_tv_net).to(self.device)
+        self.v_net = ValueNetwork(self.in_dim, 1).to(self.device)
+        self.target_v_net = ValueNetwork(self.in_dim, 1).to(self.device)
 
-        self.q_net1 = SoftQNetwork(self.in_dim, self.action_dim, saved_q_net=saved_q1_net).to(self.device)
-        self.q_net2 = SoftQNetwork(self.in_dim, self.action_dim, saved_q_net=saved_q2_net).to(self.device)
+        self.q_net1 = SoftQNetwork(self.in_dim, self.action_dim).to(self.device)
+        self.q_net2 = SoftQNetwork(self.in_dim, self.action_dim).to(self.device)
 
-        self.pi_net = PolicyNetwork(self.in_dim, self.action_dim, saved_pi_net=saved_pi_net).to(self.device)
+        self.pi_net = PolicyNetwork(self.in_dim, self.action_dim).to(self.device)
 
         for target_param, param in zip(self.target_v_net.parameters(), self.v_net.parameters()):
             target_param.data.copy_(param)
@@ -62,11 +48,6 @@ class SACAgent:
         self.q1_optimizer = optim.Adam(self.q_net1.parameters(), lr=q_lr)
         self.q2_optimizer = optim.Adam(self.q_net1.parameters(), lr=q_lr)
         self.pi_optimizer = optim.Adam(self.pi_net.parameters(), lr=pi_lr)
-
-        if saved_v_opt:  self.v_optimizer.load_state_dict(saved_v_opt)
-        if saved_q1_opt: self.q1_optimizer.load_state_dict(saved_q1_opt)
-        if saved_q2_opt: self.q2_optimizer.load_state_dict(saved_q2_opt)
-        if saved_pi_opt: self.pi_optimizer.load_state_dict(saved_pi_opt)
 
         self.replay_buffer = BasicBuffer(buffer_maxlen)
 

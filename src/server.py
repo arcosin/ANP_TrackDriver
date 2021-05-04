@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 # sys.path.append(path.join(path.dirname(__file__), '..'))
 from sac import SACAgent
 from sac import BasicBuffer
+from sac import Checkpointer
 
 num_updates = 20
 episode_rewards = []
@@ -52,6 +53,11 @@ def listen(agent, batch_size, host, port):
         print("Received replay buffer and episode_rewards from bot in %fs" % (end - start))
         print("Closing connection...\n")
         conn.close()
+
+        checkpoint_num = input("Enter y to save current model, or press enter to skip and continue: ")
+        if checkpoint_num == "y":
+            print("Saving checkpoint")
+            chkpt.save_checkpoint(agent)
 
         # Save some images
         print("Saving images...")
@@ -172,16 +178,12 @@ def readCommand(argv):
                       help=default('image dimension'), default=256)
     parser.add_option('-B', '--batch', dest='batch_size', type='int',
                       help=default('batch size'), default=32)
-
-    parser.add_option('--checkpoint', dest='checkpoint_path',
-                      help=default('Path to saved checkpoint. Must contain:\n\
-                                    fe, v_net, tv_net, q1_net, q2_net, pi_net\n\
-                                    v_opt, q1_opt, q2_opt, pi_opt'), default=None)
-
     parser.add_option('--host', dest='host',
                       help=default('server hostname'), default='localhost')
     parser.add_option('--port', dest='port',type='int',
                       help=default('port number'), default=1138)
+    parser.add_option('--checkpoint', dest='checkpoint',type='int',
+                      help=default('checkpoint number to load'), default=-1)
 
     options, junk = parser.parse_args(argv)
     if len(junk) != 0:
@@ -194,7 +196,7 @@ def readCommand(argv):
     args['eta'] = options.eta
     args['size'] = (options.size, options.size, 3)
     args['batch_size'] = options.batch_size
-    args['checkpoint_path'] = options.checkpoint_path
+    args['checkpoint'] = options.checkpoint
 
     args['host'] = options.host
     args['port'] = options.port
@@ -213,16 +215,32 @@ if __name__ == "__main__":
     os.mkdir(PIC_DIR)
 
     args = readCommand(sys.argv[1:])
-    agent = SACAgent(action_range=[[-50, 50], [-60, 60]],
-                     action_dim=2,
-                     gamma=args['gamma'],
-                     tau=args['tau'],
-                     v_lr=args['alpha'],
-                     q_lr=args['beta'],
-                     pi_lr=args['eta'],
-                     image_size=(512,256,3), # args['size'],
-                     kernel_size=(3,3),
-                     conv_channels=4,
-                     checkpoint=None if args['checkpoint_path'] == None else torch.load(args['checkpoint_path']))
+
+    chkpt = Checkpointer(model_class=SACAgent, save_dir=models, model_params={
+        "action_range"=[[-50, 50], [-60, 60]],
+        "action_dim"=2,
+        "gamma"=args['gamma'],
+        "tau"=args['tau'],
+        "v_lr"=args['alpha'],
+        "q_lr"=args['beta'],
+        "pi_lr"=args['eta'],
+        "image_size"=(512,256,3), # args['size'],
+        "kernel_size"=(3,3),
+        "conv_channels"=4,
+    })
+
+    if args['checkpoint'] >= 0:
+        agent = chkpt.load_checkpoint(args['checkpoint'])
+    else:
+        agent = SACAgent(action_range=[[-50, 50], [-60, 60]],
+                        action_dim=2,
+                        gamma=args['gamma'],
+                        tau=args['tau'],
+                        v_lr=args['alpha'],
+                        q_lr=args['beta'],
+                        pi_lr=args['eta'],
+                        image_size=(512,256,3), # args['size'],
+                        kernel_size=(3,3),
+                        conv_channels=4)
 
     listen(agent, args['batch_size'], args['host'], args['port'])

@@ -5,7 +5,7 @@ import torch.optim as optim
 import json
 import os
 
-class checkpointer:
+class Checkpointer:
     def __init__(self, model_class, save_dir, save_loc='.', model_params={}):
         self.model_class = model_class
         self.save_path = str(save_loc + '/' + save_dir)
@@ -27,8 +27,9 @@ class checkpointer:
                 'last_checkpoint_id': 0
             }
             metafile = open(self.save_path + '/data.json', 'w')
-            metafile.write(json.dumps(metadata))
+            metafile.write(json.dumps(self.metadata))
             metafile.close()
+        print("Checkpointer init successful")
 
     def save_checkpoint(self, model, score=0):
         checkpoint_id = metadata['last_checkpoint_id'] + 1
@@ -41,7 +42,7 @@ class checkpointer:
             'target_value_model_state_dict': model.target_v_net.state_dict(),
             'q1_model_state_dict': model.q_net1.state_dict(),
             'q2_model_state_dict': model.q_net2.state_dict(),
-            'pi_model_state_dict': model.pi_net.state_dict()
+            'pi_model_state_dict': model.pi_net.state_dict(),
             'value_optimizer_state_dict': model.value_optimizer.state_dict(),
             'q1_optimizer_state_dict': model.q1_optimizer.state_dict(),
             'q2_optimizer_state_dict': model.q2_optimizer.state_dict(),
@@ -49,6 +50,8 @@ class checkpointer:
             'score': score,
             }, str(self.save_path + '/checkpoint_' + str(checkpoint_id))
         self.flush_metadata()
+
+        print("Saved checkpoint successfully")
 
     def load_last_checkpoint(self, env):
         # TODO get correct model initializing setup
@@ -58,22 +61,31 @@ class checkpointer:
     def get_checkpoints(self):
         return self.metadata['checkpoints'], self.metadata['checkpoint_scores']
 
-    def load_checkpoint(self, checkpoint_id, env):
-        model = self.model_class(env, **metadata['hyperparameters'])
+    def load_checkpoint(self, checkpoint_id):
+        model = self.model_class(**metadata['hyperparameters'])
 
         checkpoint = torch.load(str(self.save_path + '/checkpoint_' + str(checkpoint_id)))
-        model.load_state_dict(checkpoint['model_state_dict'])
+
+        model.fe.load_state_dict(checkpoint['fe_model_state_dict'])
+        model.v_net.load_state_dict(checkpoint['value_model_state_dict'])
+        model.target_v_net.load_state_dict(checkpoint['target_value_model_state_dict'])
+        model.q_net1.load_state_dict(checkpoint['q1_model_state_dict'])
+        model.q_net2.load_state_dict(checkpoint['q2_model_state_dict'])
+        model.pi_net.load_state_dict(checkpoint['pi_model_state_dict'])
+
         model.value_optimizer.load_state_dict(checkpoint['value_optimizer_state_dict'])
         model.q1_optimizer.load_state_dict(checkpoint['q1_optimizer_state_dict'])
         model.q2_optimizer.load_state_dict(checkpoint['q2_optimizer_state_dict'])
         model.policy_optimizer.load_state_dict(checkpoint['policy_optimizer_state_dict'])
+
         score = checkpoint['score']
+        return model, score
 
     def delete_checkpoint(self, checkpoint_id):
         # TODO
         pass
 
     def flush_metadata(self):
-        metafile = open(self.save_path + '/data.json', 'r')
-        self.metadata = json.loads(metafile.read())
+        metafile = open(self.save_path + '/data.json', 'w')
+        metafile.write(json.dumps(self.metadata))
         metafile.close()
