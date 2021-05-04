@@ -229,8 +229,8 @@ if __name__ == "__main__":
         "conv_channels":4,
     })
 
-    if args['checkpoint'] >= 0:
-        agent = chkpt.load_checkpoint(args['checkpoint'])
+    if int(args['checkpoint']) >= 0:
+        agent, _ = chkpt.load_checkpoint(int(args['checkpoint']))
     else:
         agent = SACAgent(action_range=[[-50, 50], [-60, 60]],
                         action_dim=2,

@@ -48,12 +48,12 @@ class Checkpointer:
             'q1_model_state_dict': model.q_net1.state_dict(),
             'q2_model_state_dict': model.q_net2.state_dict(),
             'pi_model_state_dict': model.pi_net.state_dict(),
-            'value_optimizer_state_dict': model.value_optimizer.state_dict(),
+            'value_optimizer_state_dict': model.v_optimizer.state_dict(),
             'q1_optimizer_state_dict': model.q1_optimizer.state_dict(),
             'q2_optimizer_state_dict': model.q2_optimizer.state_dict(),
-            'policy_optimizer_state_dict': model.policy_optimizer.state_dict(),
+            'policy_optimizer_state_dict': model.pi_optimizer.state_dict(),
             'score': score,
-            }, str(self.save_path + '/checkpoint_' + str(checkpoint_id)))
+            }, str(self.save_path + '/checkpoint_' + str(checkpoint_id) + ".pt"))
 
         self.flush_metadata()
 
@@ -79,10 +79,10 @@ class Checkpointer:
         model.q_net2.load_state_dict(checkpoint['q2_model_state_dict'])
         model.pi_net.load_state_dict(checkpoint['pi_model_state_dict'])
 
-        model.value_optimizer.load_state_dict(checkpoint['value_optimizer_state_dict'])
+        model.v_optimizer.load_state_dict(checkpoint['value_optimizer_state_dict'])
         model.q1_optimizer.load_state_dict(checkpoint['q1_optimizer_state_dict'])
         model.q2_optimizer.load_state_dict(checkpoint['q2_optimizer_state_dict'])
-        model.policy_optimizer.load_state_dict(checkpoint['policy_optimizer_state_dict'])
+        model.pi_optimizer.load_state_dict(checkpoint['policy_optimizer_state_dict'])
 
         score = checkpoint['score']
         return model, score

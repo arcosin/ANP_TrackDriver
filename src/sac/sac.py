@@ -13,10 +13,14 @@ class SACAgent:
                  action_range, action_dim, gamma, tau, v_lr, q_lr, pi_lr, buffer_maxlen=int(1e6),
                  image_size=(256,256,3), kernel_size=(3,3), conv_channels=4,
                  logFile='logs/losses.txt'):
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        #TODO: Known issue when cuda is enabled, robot can't de-pickle stuff from server
+        #self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = "cpu"
 
         self.action_range = action_range
         self.action_dim = action_dim
+
+        self.image_size = tuple(image_size)
 
         # Hyperparameters
         self.gamma = gamma
@@ -29,7 +33,7 @@ class SACAgent:
 
         # Network initialization
         self.fe = FeatureExtractor(image_size[2], conv_channels, kernel_size).to(self.device)
-        self.in_dim = self.fe.get_output_size(image_size)
+        self.in_dim = self.fe.get_output_size(self.image_size)
         self.in_dim = np.prod(self.in_dim)
 
         self.v_net = ValueNetwork(self.in_dim, 1).to(self.device)
