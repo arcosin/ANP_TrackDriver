@@ -36,7 +36,12 @@ class checkpointer:
         metadata['checkpoints'].append(checkpoint_id)
         metadata['checkpoint_scores'].append(score)
         torch.save({
-            'model_state_dict': model.state_dict()
+            'fe_model_state_dict': model.fe.state_dict(),
+            'value_model_state_dict': model.v_net.state_dict(),
+            'target_value_model_state_dict': model.target_v_net.state_dict(),
+            'q1_model_state_dict': model.q_net1.state_dict(),
+            'q2_model_state_dict': model.q_net2.state_dict(),
+            'pi_model_state_dict': model.pi_net.state_dict()
             'value_optimizer_state_dict': model.value_optimizer.state_dict(),
             'q1_optimizer_state_dict': model.q1_optimizer.state_dict(),
             'q2_optimizer_state_dict': model.q2_optimizer.state_dict(),
