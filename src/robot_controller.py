@@ -153,8 +153,6 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
                 print(f"\tLast action took {step_end - step_start} seconds")
 
-                dt.driveHalt()
-
                 episode_rewards.append(episode_reward)
                 print("Episode " + str(episode) + ": " + str(episode_reward))
 
@@ -165,6 +163,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
                 time.sleep(5)
                 robot_rollback(action_stack)
 
+                dt.driveHalt()
                 input("Press enter once the robot is reset on the track")
                 break
 
