@@ -218,7 +218,7 @@ if __name__ == "__main__":
     num_actions = 2
     fe_filters = 4
     kernel_size = 3
-    action_range = [[-30, 50], [-60, 60]]
+    action_range = [[-20, 50], [-60, 60]]
 
     agent = Agent(input_shape, num_actions, fe_filters, kernel_size, action_range)
     robot_train(dt, agent, cam, lt,
