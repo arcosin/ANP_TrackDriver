@@ -149,7 +149,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
                 episode_rewards.append(episode_reward)
                 print("Episode " + str(episode) + ": " + str(episode_reward))
-                
+
                 sent = True
                 # Only do during training
                 detector.kill = True
@@ -161,7 +161,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
                 dt.driveHalt()
                 input("Press enter once the robot is reset on the track")
                 break
-                
+
             pic = next_pic
 
         if not sent:
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     args = readCommand(sys.argv[1:])
     print("Initializing objects")
     dt = DriveTrain()
-    cam = Camera()
+    cam = Camera(sensor_mode=5, brightness=16, contrast=32)
     lt = LineTracker()
 
     input_shape = (512, 256, 3)    # Should be (h, w, c)

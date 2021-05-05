@@ -68,5 +68,6 @@ if __name__ == "__main__":
     from PIL import Image
     pic = camera.takePic()
     print(pic.shape)
-    im = Image.fromarray(pic).rotate(90,expand=True)
-    im.save('./5.jpg')
+    im1 = Image.fromarray(pic)
+    im1.save('./rot.jpg')
+
