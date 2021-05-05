@@ -139,6 +139,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
                 step_end = time.time()
                 action_stack.append((speed, angle, step_end - step_start))
+                print(f"\tLast action took {step_end - step_start} seconds")
 
                 episode_rewards.append(episode_reward)
                 print("Episode " + str(episode) + ": " + str(episode_reward))
@@ -152,14 +153,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
                 print(f"\tLast action took {step_end - step_start} seconds")
 
-                input("Press enter to rollback")
-                robot_rollback(action_stack)
-                #if lt.detect()[0]:
-                #    print("\tRollback failed! Please reset the bot back to the track manually")
-
                 dt.driveHalt()
-
-                #input("HERE TO BREAK")
 
                 episode_rewards.append(episode_reward)
                 print("Episode " + str(episode) + ": " + str(episode_reward))
@@ -167,6 +161,10 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
                 sent = True
                 detector.kill = True
                 pickle_test(replay_buf, episode_rewards, host, port)
+
+                time.sleep(5)
+                robot_rollback(action_stack)
+
                 input("Press enter once the robot is reset on the track")
                 break
 
