@@ -6,6 +6,8 @@ __pycache__/
 # PyTorch
 *.pt
 *.json
+*.jpg
+src/models/
 
 # C extensions
 *.so

@@ -130,7 +130,7 @@ def save_episode_pictures(replay_buf, episode_num, sample):
     os.mkdir(ep_dir_name)
 
     for (state, action, _, _, _) in batch:
-        im = Image.fromarray(state).rotate(90,expand=True)
+        im = Image.fromarray(state).rotate(90,expand=True).transpose(Image.FLIP_LEFT_RIGHT)
         fileName = ep_dir_name + "/img_" + str(i) + "-action=" + str(action) + ".jpg"
 
         im.save(fileName)
@@ -238,6 +238,7 @@ if __name__ == "__main__":
 
     if int(args['checkpoint']) >= 0:
         agent, _ = chkpt.load_checkpoint(int(args['checkpoint']))
+        print(f"Loaded checkpoint {int(args['checkpoint'])}")
     else:
         agent = SACAgent(action_range=[[-50, 50], [-60, 60]],
                         action_dim=2,
