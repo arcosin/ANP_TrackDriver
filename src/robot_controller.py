@@ -12,6 +12,7 @@ from robot import Agent
 from robot import Camera
 from robot import DriveTrain
 from robot import LineTracker
+from robot import Headlight
 
 # from os import path
 
@@ -128,6 +129,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
             print(f"\tUsing speed={speed}, angle={angle}")
             step_start = time.time()
+            hd.switch_on
             dt.moveAbsoluteDelay(speed, angle, timestep)
 
             if detector.detected == True:
@@ -141,6 +143,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
             replay_buf.push(pic, action, 1, next_pic, done)
 
             if (step == max_steps - 1) or done:
+                hd.switch_off
                 dt.driveHalt()
 
                 step_end = time.time()
@@ -209,6 +212,7 @@ if __name__ == "__main__":
     dt = DriveTrain()
     cam = Camera(sensor_mode=5, brightness=16, contrast=32)
     lt = LineTracker()
+    hd = Headlight()
 
     input_shape = (512, 256, 3)    # Should be (h, w, c)
     num_actions = 2
