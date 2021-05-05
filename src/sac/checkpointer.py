@@ -70,7 +70,7 @@ class Checkpointer:
     def load_checkpoint(self, checkpoint_id):
         model = self.model_class(**self.metadata['hyperparameters'])
 
-        checkpoint = torch.load(str(self.save_path + '/checkpoint_' + str(checkpoint_id)))
+        checkpoint = torch.load(str(self.save_path + '/checkpoint_' + str(checkpoint_id) + ".pt"))
 
         model.fe.load_state_dict(checkpoint['fe_model_state_dict'])
         model.v_net.load_state_dict(checkpoint['value_model_state_dict'])

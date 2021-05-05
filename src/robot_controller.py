@@ -79,7 +79,7 @@ def pickle_test(replay_buf, episode_rewards, host, port):
 
 def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, port, test):
     episode_rewards = []
-    if test:
+    if test == 1:
         print(f"Starting in test mode")
     else:
         print(f"Starting training")
@@ -105,7 +105,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
         for step in range(max_steps):
             done = False
 
-            if test:
+            if test == 1:
                 rescaled_action, action = agent.get_best_action(pic)
             else:
                 rescaled_action, action = agent.get_action(pic)
@@ -150,8 +150,8 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
                 episode_rewards.append(episode_reward)
                 print("Episode " + str(episode) + ": " + str(episode_reward))
                 
-                if not test:    # Only do during training
-                    sent = True
+                sent = True
+                if test == 0:    # Only do during training
                     detector.kill = True
                     pickle_test(replay_buf, episode_rewards, host, port)
 
@@ -166,8 +166,6 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
         if not sent:
             detector.kill = True
-
-            pickle_test(replay_buf, episode_rewards, host, port)
 
     return episode_rewards
 
@@ -192,7 +190,7 @@ def readCommand(argv):
     parser.add_option('--host', dest='host', help=default('server hostname'), default='localhost')
     parser.add_option('--port', dest='port',type='int',
                       help=default('port number'), default=1138)
-    parser.add_option('--test', dest='test', help=default('testing mode'), type='str2bool', const='True', default='False')
+    parser.add_option('--test', dest='test', help=default('testing mode'), type='int', default=0)
 
     options, junk = parser.parse_args(argv)
     if len(junk) != 0:
