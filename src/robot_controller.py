@@ -94,6 +94,9 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
         detector = thread("detector", 1000, lt)
         detector.start()
 
+        speed = 0
+        angle = 0
+
         sent = False
         for step in range(max_steps):
             done = False
