@@ -97,9 +97,11 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
         sent = False
         for step in range(max_steps):
             done = False
-            print(pic.shape)
-            step_start = time.time()
+            
             rescaled_action, action = agent.get_action(pic)
+
+            old_speed = speed
+            old_angle = angle
 
             speed = rescaled_action[0]
             angle = rescaled_action[1]
@@ -108,8 +110,13 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
             # Provide absolute speed and angle for this state, wait timestep amount of time before returning
             # NOTE: this call maintains the speed and angle after return. Subsequent calls change it.
+
+            step_end = time.time()
+            if (step_end - step_start) > 0:
+                action_stack.append((old_speed, old_angle, step_end - step_start))
+
+            step_start = time.time()
             dt.moveAbsoluteDelay(speed, angle, timestep)
-            
 
             if detector.detected == True:
                 print("\tDetected, terminate episode")
@@ -122,6 +129,10 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
             if step == max_steps - 1:
                 dt.driveHalt()
+
+                step_end = time.time()
+                action_stack.append((speed, angle, step_end - step_start))
+
                 episode_rewards.append(episode_reward)
                 print("Episode " + str(episode) + ": " + str(episode_reward))
                 break
@@ -129,15 +140,17 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
                 # TODO: Fix rollback procedure
                 #print("\tStarting automatic rollback")
                 dt.driveHalt()
+                step_end = time.time()
+                action_stack.append((speed, angle, step_end - step_start))
 
-                input("Press enter to rollback")
+                #input("Press enter to rollback")
                 robot_rollback(action_stack)
                 #if lt.detect()[0]:
                 #    print("\tRollback failed! Please reset the bot back to the track manually")
 
                 dt.driveHalt()
 
-                input("HERE TO BREAK")
+                #input("HERE TO BREAK")
 
                 episode_rewards.append(episode_reward)
                 print("Episode " + str(episode) + ": " + str(episode_reward))
@@ -149,8 +162,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
                 break
 
             pic = next_pic
-            step_end = time.time()
-            action_stack.append((speed, angle, step_end - step_start))
+
         if not sent:
             detector.kill = True
 
