@@ -5,6 +5,7 @@ __pycache__/
 
 # PyTorch
 *.pt
+*.json
 
 # C extensions
 *.so
