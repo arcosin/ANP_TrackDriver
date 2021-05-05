@@ -123,6 +123,7 @@ def save_episode_pictures(replay_buf, episode_num, sample):
     if sample > 0:
         batch = random.sample(replay_buf, sample)
     else:
+        print("Taking from here")
         batch = replay_buf
     i = 0
 
@@ -131,7 +132,8 @@ def save_episode_pictures(replay_buf, episode_num, sample):
 
     for (state, action, _, _, _) in batch:
         im = Image.fromarray(state).rotate(90,expand=True)
-        fileName = ep_dir_name + "/img_" + str(i) + "-action:" + str(action) + ".jpg"
+        fileName = ep_dir_name + "/img_" + str(i) + "-action=" + str(action) + ".jpg"
+
         im.save(fileName)
         i += 1
 
