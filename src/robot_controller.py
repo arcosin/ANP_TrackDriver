@@ -151,9 +151,9 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
                 print("Episode " + str(episode) + ": " + str(episode_reward))
                 
                 sent = True
-                if test == 0:    # Only do during training
-                    detector.kill = True
-                    pickle_test(replay_buf, episode_rewards, host, port)
+                # Only do during training
+                detector.kill = True
+                pickle_test(replay_buf, episode_rewards, host, port)
 
                 time.sleep(5)
                 robot_rollback(action_stack)
