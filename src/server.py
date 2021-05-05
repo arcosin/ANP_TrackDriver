@@ -6,6 +6,7 @@ import pickle
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+import os
 # from os import path
 
 # sys.path.append(path.join(path.dirname(__file__), '..'))
@@ -63,7 +64,7 @@ def listen(agent, batch_size, host, port):
 
         # Save some images
         print("Saving images...")
-        save_episode_pictures(replay_buffer, episode_num, 10)
+        save_episode_pictures(replay_buffer, episode_num, -1)
         episode_num += 1
 
         print("Updating models...")
@@ -124,10 +125,14 @@ def save_episode_pictures(replay_buf, episode_num, sample):
     else:
         batch = replay_buf
     i = 0
-    for (state, _, _, _, _) in batch:
+
+    ep_dir_name = PIC_DIR + "episode_" + str(episode_num)
+    os.mkdir(ep_dir_name)
+
+    for (state, action, _, _, _) in batch:
         im = Image.fromarray(state).rotate(90,expand=True)
-        savepath = PIC_DIR + "img" + str(episode_num) + '-' + str(i) + ".jpg"
-        im.save(savepath)
+        fileName = ep_dir_name + "/img_" + str(i) + "-action:" + str(action) + ".jpg"
+        im.save(fileName)
         i += 1
 
 def update_reward_graph(episode_rewards):
@@ -213,7 +218,6 @@ if __name__ == "__main__":
     REWARD_PATH = './logs/reward-graphs/' + now + '-reward-graph.png'
     LOSS_PATH = './logs/loss-graphs/' + now + '-loss-graph.png'
     PIC_DIR = "./logs/images/" + now + "/"
-    import os
     os.mkdir(PIC_DIR)
 
     args = readCommand(sys.argv[1:])
