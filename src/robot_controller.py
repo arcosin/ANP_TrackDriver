@@ -127,6 +127,8 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
             elif done:
                 # TODO: Fix rollback procedure
                 #print("\tStarting automatic rollback")
+                dt.driveHalt()
+
                 input("Press enter to rollback")
                 robot_rollback(action_stack)
                 #if lt.detect()[0]:
