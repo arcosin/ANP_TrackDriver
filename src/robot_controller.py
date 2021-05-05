@@ -127,7 +127,8 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
             elif done:
                 # TODO: Fix rollback procedure
                 #print("\tStarting automatic rollback")
-                #robot_rollback(action_stack)
+                input("Press enter to rollback")
+                robot_rollback(action_stack)
                 #if lt.detect()[0]:
                 #    print("\tRollback failed! Please reset the bot back to the track manually")
 
@@ -153,7 +154,8 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
 def robot_rollback(action_stack):
     # rollback random number of steps to set the robot back to track
-    t = min(random.randint(0, len(action_stack) - 1), 5)
+    #t = min(random.randint(0, len(action_stack) - 1), 5)
+    t = len(action_stack)
     for i in range(t):
         speed, angle, timestep = action_stack.pop()
         dt.moveAbsoluteDelay(-speed, angle, timestep)
