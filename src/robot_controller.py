@@ -98,6 +98,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
         for step in range(max_steps):
             done = False
             print(pic.shape)
+            step_start = time.time()
             rescaled_action, action = agent.get_action(pic)
 
             speed = rescaled_action[0]
@@ -108,7 +109,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
             # Provide absolute speed and angle for this state, wait timestep amount of time before returning
             # NOTE: this call maintains the speed and angle after return. Subsequent calls change it.
             dt.moveAbsoluteDelay(speed, angle, timestep)
-            action_stack.append((speed, angle, timestep))
+            
 
             if detector.detected == True:
                 print("\tDetected, terminate episode")
@@ -136,6 +137,8 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
                 dt.driveHalt()
 
+                input("HERE TO BREAK")
+
                 episode_rewards.append(episode_reward)
                 print("Episode " + str(episode) + ": " + str(episode_reward))
 
@@ -146,7 +149,8 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
                 break
 
             pic = next_pic
-
+            step_end = time.time()
+            action_stack.append((speed, angle, step_end - step_start))
         if not sent:
             detector.kill = True
 
