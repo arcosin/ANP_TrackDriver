@@ -65,7 +65,6 @@ def listen(agent, batch_size, host, port):
         # Save some images
         print("Saving images...")
         save_episode_pictures(replay_buffer, episode_num, -1)
-        episode_num += 1
 
         print("Updating models...")
         agent.replay_buffer.add_to_buffer(replay_buffer)
