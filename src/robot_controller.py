@@ -77,9 +77,12 @@ def pickle_test(replay_buf, episode_rewards, host, port):
     print("Closing connection...\n")
     s.close()
 
-def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, port):
+def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, port, test):
     episode_rewards = []
-    print(f"Starting training")
+    if test:
+        print(f"Starting in test mode")
+    else:
+        print(f"Starting training")
 
     action_stack =[]
     for episode in range(max_episodes):
@@ -102,14 +105,16 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
         for step in range(max_steps):
             done = False
 
-            rescaled_action, action = agent.get_action(pic)
+            if test:
+                rescaled_action, action = agent.get_best_action(pic)
+            else:
+                rescaled_action, action = agent.get_action(pic)
 
             old_speed = speed
             old_angle = angle
 
             speed = rescaled_action[0]
             angle = rescaled_action[1]
-
 
             # Provide absolute speed and angle for this state, wait timestep amount of time before returning
             # NOTE: this call maintains the speed and angle after return. Subsequent calls change it.
@@ -131,10 +136,11 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
                 episode_reward += -1000   #Adjust
             else:
                 episode_reward += speed
+
             next_pic = cam.takePic()
             replay_buf.push(pic, action, 1, next_pic, done)
 
-            if step == max_steps - 1:
+            if (step == max_steps - 1) or done:
                 dt.driveHalt()
 
                 step_end = time.time()
@@ -143,22 +149,11 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
                 episode_rewards.append(episode_reward)
                 print("Episode " + str(episode) + ": " + str(episode_reward))
-                break
-            elif done:
-                # TODO: Fix rollback procedure
-                #print("\tStarting automatic rollback")
-                dt.driveHalt()
-                step_end = time.time()
-                action_stack.append((speed, angle, step_end - step_start))
-
-                print(f"\tLast action took {step_end - step_start} seconds")
-
-                episode_rewards.append(episode_reward)
-                print("Episode " + str(episode) + ": " + str(episode_reward))
-
-                sent = True
-                detector.kill = True
-                pickle_test(replay_buf, episode_rewards, host, port)
+                
+                if not test:    # Only do during training
+                    sent = True
+                    detector.kill = True
+                    pickle_test(replay_buf, episode_rewards, host, port)
 
                 time.sleep(5)
                 robot_rollback(action_stack)
@@ -166,7 +161,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
                 dt.driveHalt()
                 input("Press enter once the robot is reset on the track")
                 break
-
+                
             pic = next_pic
 
         if not sent:
@@ -197,6 +192,7 @@ def readCommand(argv):
     parser.add_option('--host', dest='host', help=default('server hostname'), default='localhost')
     parser.add_option('--port', dest='port',type='int',
                       help=default('port number'), default=1138)
+    parser.add_option('--test', dest='test', help=default('testing mode'), type='str2bool', const='True', default='False')
 
     options, junk = parser.parse_args(argv)
     if len(junk) != 0:
@@ -205,6 +201,7 @@ def readCommand(argv):
     args = dict()
     args['host'] = options.host
     args['port'] = options.port
+    args['test'] = options.test
 
     return args
 
@@ -224,4 +221,4 @@ if __name__ == "__main__":
     agent = Agent(input_shape, num_actions, fe_filters, kernel_size, action_range)
     robot_train(dt, agent, cam, lt,
                 max_episodes=50, max_steps=50, batch_size=32,
-                host=args['host'], port=args['port'])
+                host=args['host'], port=args['port'], test=args['test'])

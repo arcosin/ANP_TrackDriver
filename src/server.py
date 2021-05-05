@@ -58,7 +58,7 @@ def listen(agent, batch_size, host, port):
         episode_num += 1
 
         #checkpoint_num = input("Enter y to save current model, or press enter to skip and continue: ")
-        if episode_num % 10 == 0:
+        if episode_num % 10 == 0 or episode_num == 49:
             print("Saving checkpoint")
             chkpt.save_checkpoint(agent)
 

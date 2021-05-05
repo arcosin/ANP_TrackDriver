@@ -55,6 +55,25 @@ class Agent():
 
         return self.rescale_action(action), action
 
+    def get_best_action(self, state):
+        if state.shape != self.image_size:
+            print(f"Invalid size, expected shape {self.image_size}, got {state.shape}")
+            return None
+
+        # Assume channel is the last dimension, so we permute
+        # Unsqueeze for batch size arg
+        # Final shape of inp is (1, height, width, channels)
+        inp = torch.from_numpy(state).float().permute(2, 0, 1).unsqueeze(0)
+
+        features = self.fe(inp)
+        features = features.view(-1, self.num_linear_inputs)
+
+        mean, _ = self.pi.forward(features)
+
+        action = mean.detach().squeeze(0).numpy()
+
+        return self.rescale_action(action), action
+
     def rescale_action(self, action):
         scaled_action = []
         for idx, a in enumerate(action):
