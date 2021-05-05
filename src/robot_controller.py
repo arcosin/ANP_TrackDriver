@@ -96,11 +96,12 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
         speed = 0
         angle = 0
+        first_step = True
 
         sent = False
         for step in range(max_steps):
             done = False
-            
+
             rescaled_action, action = agent.get_action(pic)
 
             old_speed = speed
@@ -109,15 +110,18 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
             speed = rescaled_action[0]
             angle = rescaled_action[1]
 
-            print(f"\tUsing speed={speed}, angle={angle}")
 
             # Provide absolute speed and angle for this state, wait timestep amount of time before returning
             # NOTE: this call maintains the speed and angle after return. Subsequent calls change it.
 
             step_end = time.time()
-            if (step_end - step_start) > 0:
+            if first_step == True:
+                first_step = False
+            else:
                 action_stack.append((old_speed, old_angle, step_end - step_start))
+                print(f"\t\tAction took {step_end - step_start} seconds")
 
+            print(f"\tUsing speed={speed}, angle={angle}")
             step_start = time.time()
             dt.moveAbsoluteDelay(speed, angle, timestep)
 
@@ -146,7 +150,9 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
                 step_end = time.time()
                 action_stack.append((speed, angle, step_end - step_start))
 
-                #input("Press enter to rollback")
+                print(f"\tLast action took {step_end - step_start} seconds")
+
+                input("Press enter to rollback")
                 robot_rollback(action_stack)
                 #if lt.detect()[0]:
                 #    print("\tRollback failed! Please reset the bot back to the track manually")
