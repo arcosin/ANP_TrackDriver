@@ -129,7 +129,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
 
             print(f"\tUsing speed={speed}, angle={angle}")
             step_start = time.time()
-            hd.switch_on
+            hd.switch_on()
             dt.moveAbsoluteDelay(speed, angle, timestep)
 
             if detector.detected == True:
@@ -143,7 +143,7 @@ def robot_train(dt, agent, cam, lt, max_episodes, max_steps, batch_size, host, p
             replay_buf.push(pic, action, 1, next_pic, done)
 
             if (step == max_steps - 1) or done:
-                hd.switch_off
+                hd.switch_off()
                 dt.driveHalt()
 
                 step_end = time.time()
